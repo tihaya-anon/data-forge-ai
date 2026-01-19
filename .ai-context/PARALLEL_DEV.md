@@ -1,4 +1,4 @@
-# Parallel AI Agent Development Guide
+# 并行 AI Agent 开发指南
 
 > 使用 Git Worktree 实现多 AI Agent 并行开发的规范和流程
 
@@ -10,7 +10,7 @@
 
 ```
 ~/projects/
-├── data-forge-ai/          # 主仓库 (main branch)
+├── data-forge-ai/          # 主仓库 (main 分支)
 │   ├── .ai-context/
 │   │   ├── CONTEXT.md      # 项目上下文
 │   │   ├── PARALLEL_DEV.md # 本文档
@@ -52,7 +52,7 @@ cp .ai-context/tasks/_template.yaml .ai-context/tasks/implement-kafka-producer.y
 
 每个工作区用独立的 IDE 窗口打开，AI Agent 会自动读取：
 - `.ai-context/CONTEXT.md` - 项目整体上下文
-- `.ai-context/tasks/<task>.yaml` - 当前任务定义
+- `.ai-context/tasks/<任务>.yaml` - 当前任务定义
 
 ### 4. 合并成果
 
@@ -106,67 +106,67 @@ make parallel-clean
 任务文件位于 `.ai-context/tasks/`，使用 YAML 格式：
 
 ```yaml
-# .ai-context/tasks/<task-name>.yaml
+# .ai-context/tasks/<任务名>.yaml
 
-task:
-  id: "task-001"
-  name: "实现 Kafka Producer 模块"
-  status: pending  # pending | in_progress | completed | blocked
+任务:
+  编号: "task-001"
+  名称: "实现 Kafka Producer 模块"
+  状态: "待处理"  # 待处理 | 进行中 | 已完成 | 已阻塞
   
   # 分配信息
-  assignment:
-    agent: "agent1"           # 对应 worktree 名称
-    branch: "agent/task-001"  # Git 分支名
-    worktree: "../data-forge-ai-agent1"
+  分配:
+    agent: "agent1"                   # 对应 worktree 名称
+    分支: "agent/task-001"            # Git 分支名
+    工作区: "../data-forge-ai-agent1"
   
   # 任务描述
-  description: |
+  描述: |
     实现 Kafka 消息生产者模块，用于发送训练数据到消息队列。
   
   # 具体目标
-  objectives:
-    - 创建 KafkaProducerService 类
-    - 实现消息序列化
-    - 添加重试机制
-    - 编写单元测试
+  目标:
+    - "创建 KafkaProducerService 类"
+    - "实现消息序列化"
+    - "添加重试机制"
+    - "编写单元测试"
   
   # 工作范围（限制 agent 只修改这些路径）
-  scope:
-    allowed_paths:
+  范围:
+    允许路径:
       - "src/data-pipeline/kafka/"
       - "tests/data-pipeline/kafka/"
       - "docs/kafka-producer.md"
-    forbidden_paths:
+    禁止路径:
       - "src/shared/"
       - "*.lock"
   
   # 依赖关系
-  dependencies:
-    requires: []              # 前置任务
-    blocks: ["task-003"]      # 被此任务阻塞的任务
+  依赖:
+    前置任务: []                      # 必须先完成的任务
+    阻塞任务: ["task-003"]            # 被此任务阻塞的任务
   
   # 接口约定（与其他任务的协作点）
-  interfaces:
-    provides:
-      - name: "KafkaProducerService"
-        type: "class"
-        path: "src/data-pipeline/kafka/producer.py"
-    consumes:
-      - name: "ConfigLoader"
-        type: "class"
-        from_task: "task-002"
+  接口:
+    提供:
+      - 名称: "KafkaProducerService"
+        类型: "类"
+        路径: "src/data-pipeline/kafka/producer.py"
+    消费:
+      - 名称: "ConfigLoader"
+        类型: "类"
+        来源任务: "task-002"
   
   # 验收标准
-  acceptance_criteria:
+  验收标准:
     - "所有测试通过"
     - "代码覆盖率 > 80%"
     - "文档完整"
   
   # 进度记录（Agent 更新）
-  progress:
-    started_at: null
-    completed_at: null
-    notes: []
+  进度:
+    开始时间: null
+    完成时间: null
+    笔记: []
 ```
 
 ---
@@ -190,7 +190,8 @@ make task-status                # 显示任务状态概览
 
 # === 合并流程 ===
 make parallel-merge BRANCH=agent/task-1  # 合并指定分支
-make parallel-merge-all                   # 合并所有已完成任务
+make parallel-diff                        # 查看分支差异
+make parallel-sync                        # 同步主分支到所有工作区
 ```
 
 ---
@@ -202,32 +203,32 @@ make parallel-merge-all                   # 合并所有已完成任务
 ### 1. 首先阅读
 
 ```
-.ai-context/CONTEXT.md          # 项目整体上下文
-.ai-context/tasks/<your-task>.yaml  # 你的任务定义
+.ai-context/CONTEXT.md              # 项目整体上下文
+.ai-context/tasks/<你的任务>.yaml   # 你的任务定义
 ```
 
 ### 2. 遵守边界
 
-- **只修改** `scope.allowed_paths` 中的文件
-- **不要触碰** `scope.forbidden_paths` 中的文件
-- 如需修改共享文件，在 `progress.notes` 中记录需求
+- **只修改** `范围.允许路径` 中的文件
+- **不要触碰** `范围.禁止路径` 中的文件
+- 如需修改共享文件，在 `进度.笔记` 中记录需求
 
 ### 3. 更新进度
 
 任务开始时：
 ```yaml
-progress:
-  started_at: "2024-01-20T10:00:00Z"
-  notes:
+进度:
+  开始时间: "2024-01-20T10:00:00Z"
+  笔记:
     - "开始分析需求"
 ```
 
 任务完成时：
 ```yaml
-status: completed
-progress:
-  completed_at: "2024-01-20T15:00:00Z"
-  notes:
+状态: "已完成"
+进度:
+  完成时间: "2024-01-20T15:00:00Z"
+  笔记:
     - "开始分析需求"
     - "完成核心实现"
     - "测试全部通过"
@@ -236,9 +237,9 @@ progress:
 ### 4. 处理依赖
 
 如果依赖其他任务的接口：
-1. 检查 `interfaces.consumes` 中定义的接口
+1. 检查 `接口.消费` 中定义的接口
 2. 如果接口文件不存在，先创建 stub/mock
-3. 在 `progress.notes` 中记录依赖状态
+3. 在 `进度.笔记` 中记录依赖状态
 
 ### 5. 提交规范
 
@@ -270,14 +271,14 @@ git fetch --all
 
 # 合并时遇到冲突
 git merge agent/task-1
-# CONFLICT in src/shared/utils.py
+# 冲突文件: src/shared/utils.py
 
 # 查看冲突详情
 git diff
 
 # 手动解决后
 git add .
-git commit -m "Merge agent/task-1, resolve conflicts in utils.py"
+git commit -m "合并 agent/task-1，解决 utils.py 冲突"
 ```
 
 ---
@@ -310,21 +311,21 @@ git rebase origin/main
 ## 示例：并行开发数据管道
 
 ```yaml
-# Task 1: Kafka Producer (Agent 1)
-scope:
-  allowed_paths:
+# 任务 1: Kafka Producer (Agent 1)
+范围:
+  允许路径:
     - "src/pipeline/kafka/producer/"
     - "tests/pipeline/kafka/producer/"
 
-# Task 2: Kafka Consumer (Agent 2)  
-scope:
-  allowed_paths:
+# 任务 2: Kafka Consumer (Agent 2)  
+范围:
+  允许路径:
     - "src/pipeline/kafka/consumer/"
     - "tests/pipeline/kafka/consumer/"
 
-# Task 3: Spark Job (Agent 3)
-scope:
-  allowed_paths:
+# 任务 3: Spark Job (Agent 3)
+范围:
+  允许路径:
     - "src/pipeline/spark/"
     - "tests/pipeline/spark/"
 

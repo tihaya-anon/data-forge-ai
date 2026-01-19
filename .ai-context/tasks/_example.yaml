@@ -1,24 +1,24 @@
 # yaml-language-server: $schema=./_schema.json
-# Task Example: Kafka Producer Implementation
+# 任务示例：实现 Kafka Producer 模块
 
-task:
-  id: "task-001"
-  name: "实现 Kafka Producer 模块"
-  status: "pending"
-  priority: "high"
+任务:
+  编号: "task-001"
+  名称: "实现 Kafka Producer 模块"
+  状态: "待处理"
+  优先级: "高"
   
-  assignment:
+  分配:
     agent: "agent1"
-    branch: "agent/kafka-producer"
-    worktree: "../data-forge-ai-agent1"
-    assigned_at: null
+    分支: "agent/kafka-producer"
+    工作区: "../data-forge-ai-agent1"
+    分配时间: null
   
-  description: |
+  描述: |
     实现数据管道中的 Kafka 消息生产者模块。
     该模块负责将清洗后的训练数据发送到 Kafka 消息队列，
     供下游的 Flink 流处理作业消费。
   
-  objectives:
+  目标:
     - "创建 KafkaProducerService 基础类"
     - "实现 JSON 和 Avro 序列化器"
     - "实现批量发送和缓冲机制"
@@ -26,70 +26,70 @@ task:
     - "集成 Prometheus 指标"
     - "编写单元测试和集成测试"
   
-  scope:
-    allowed_paths:
+  范围:
+    允许路径:
       - "src/data-pipeline/kafka/producer/"
       - "tests/data-pipeline/kafka/producer/"
       - "docs/data-pipeline/kafka-producer.md"
-    forbidden_paths:
+    禁止路径:
       - "src/data-pipeline/kafka/consumer/"
       - "src/shared/"
       - "*.lock"
       - ".ai-context/"
   
-  dependencies:
-    requires: []
-    blocks:
+  依赖:
+    前置任务: []
+    阻塞任务:
       - "task-003"
   
-  interfaces:
-    provides:
-      - name: "KafkaProducerService"
-        type: "class"
-        path: "src/data-pipeline/kafka/producer/service.py"
-    consumes:
-      - name: "MessageSchema"
-        type: "class"
-        from_task: "task-000"
+  接口:
+    提供:
+      - 名称: "KafkaProducerService"
+        类型: "类"
+        路径: "src/data-pipeline/kafka/producer/service.py"
+    消费:
+      - 名称: "MessageSchema"
+        类型: "类"
+        来源任务: "task-000"
   
-  technical_requirements:
-    language: "python"
-    framework: "confluent-kafka"
-    patterns:
-      - "Factory Pattern"
-      - "Circuit Breaker"
-    testing:
-      required: true
-      coverage_min: 80
-      types:
-        - "unit"
-        - "integration"
+  技术要求:
+    语言: "python"
+    框架: "confluent-kafka"
+    设计模式:
+      - "工厂模式"
+      - "熔断器模式"
+    测试:
+      必需: true
+      最低覆盖率: 80
+      类型:
+        - "单元测试"
+        - "集成测试"
   
-  acceptance_criteria:
+  验收标准:
     - "单元测试覆盖率 >= 80%"
     - "集成测试通过"
     - "支持 10000 msg/s 吞吐量"
     - "重试机制正确处理故障"
   
-  references:
-    docs:
+  参考资料:
+    文档:
       - "docs/ARCHITECTURE.md#data-pipeline"
-    examples:
+    示例:
       - "src/data-pipeline/spark/"
-    related_tasks:
+    相关任务:
       - "task-002"
       - "task-003"
   
-  progress:
-    started_at: null
-    completed_at: null
-    estimated_hours: 8
-    actual_hours: null
-    notes: []
-    blockers: []
+  进度:
+    开始时间: null
+    完成时间: null
+    预估工时: 8
+    实际工时: null
+    笔记: []
+    阻塞项: []
   
-  metadata:
-    created_at: "2024-01-20T10:00:00Z"
-    updated_at: "2024-01-20T10:00:00Z"
-    created_by: "human"
-    version: 1
+  元信息:
+    创建时间: "2024-01-20T10:00:00Z"
+    更新时间: "2024-01-20T10:00:00Z"
+    创建者: "human"
+    版本: 1

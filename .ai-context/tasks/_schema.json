@@ -1,84 +1,84 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "AI Agent Task",
-  "description": "Task definition for parallel AI agent development",
+  "title": "AI Agent 任务定义",
+  "description": "并行 AI Agent 开发的任务定义文件",
   "type": "object",
   "properties": {
-    "task": {
+    "任务": {
       "type": "object",
       "properties": {
-        "id": { "type": "string" },
-        "name": { "type": "string" },
-        "status": { 
+        "编号": { "type": "string" },
+        "名称": { "type": "string" },
+        "状态": { 
           "type": "string",
-          "enum": ["pending", "in_progress", "completed", "blocked"]
+          "enum": ["待处理", "进行中", "已完成", "已阻塞"]
         },
-        "priority": {
+        "优先级": {
           "type": "string",
-          "enum": ["low", "medium", "high", "critical"]
+          "enum": ["低", "中", "高", "紧急"]
         },
-        "assignment": {
+        "分配": {
           "type": "object",
           "properties": {
             "agent": { "type": "string" },
-            "branch": { "type": "string" },
-            "worktree": { "type": "string" },
-            "assigned_at": { "type": ["string", "null"] }
+            "分支": { "type": "string" },
+            "工作区": { "type": "string" },
+            "分配时间": { "type": ["string", "null"] }
           }
         },
-        "description": { "type": "string" },
-        "objectives": {
+        "描述": { "type": "string" },
+        "目标": {
           "type": "array",
           "items": { "type": "string" }
         },
-        "scope": {
+        "范围": {
           "type": "object",
           "properties": {
-            "allowed_paths": {
+            "允许路径": {
               "type": "array",
               "items": { "type": "string" }
             },
-            "forbidden_paths": {
+            "禁止路径": {
               "type": "array",
               "items": { "type": "string" }
             }
           }
         },
-        "dependencies": {
+        "依赖": {
           "type": "object",
           "properties": {
-            "requires": {
+            "前置任务": {
               "type": "array",
               "items": { "type": "string" }
             },
-            "blocks": {
+            "阻塞任务": {
               "type": "array",
               "items": { "type": "string" }
             }
           }
         },
-        "interfaces": {
+        "接口": {
           "type": "object",
           "properties": {
-            "provides": { "type": "array" },
-            "consumes": { "type": "array" }
+            "提供": { "type": "array" },
+            "消费": { "type": "array" }
           }
         },
-        "technical_requirements": {
+        "技术要求": {
           "type": "object",
           "properties": {
-            "language": { "type": "string" },
-            "framework": { "type": "string" },
-            "patterns": {
+            "语言": { "type": "string" },
+            "框架": { "type": "string" },
+            "设计模式": {
               "type": "array",
               "items": { "type": "string" }
             },
-            "testing": {
+            "测试": {
               "type": "object",
               "properties": {
-                "required": { "type": "boolean" },
-                "coverage_min": { "type": "number" },
-                "types": {
+                "必需": { "type": "boolean" },
+                "最低覆盖率": { "type": "number" },
+                "类型": {
                   "type": "array",
                   "items": { "type": "string" }
                 }
@@ -86,50 +86,50 @@
             }
           }
         },
-        "acceptance_criteria": {
+        "验收标准": {
           "type": "array",
           "items": { "type": "string" }
         },
-        "references": {
+        "参考资料": {
           "type": "object",
           "properties": {
-            "docs": {
+            "文档": {
               "type": "array",
               "items": { "type": "string" }
             },
-            "examples": {
+            "示例": {
               "type": "array",
               "items": { "type": "string" }
             },
-            "related_tasks": {
+            "相关任务": {
               "type": "array",
               "items": { "type": "string" }
             }
           }
         },
-        "progress": {
+        "进度": {
           "type": "object",
           "properties": {
-            "started_at": { "type": ["string", "null"] },
-            "completed_at": { "type": ["string", "null"] },
-            "estimated_hours": { "type": ["number", "null"] },
-            "actual_hours": { "type": ["number", "null"] },
-            "notes": { "type": "array" },
-            "blockers": { "type": "array" }
+            "开始时间": { "type": ["string", "null"] },
+            "完成时间": { "type": ["string", "null"] },
+            "预估工时": { "type": ["number", "null"] },
+            "实际工时": { "type": ["number", "null"] },
+            "笔记": { "type": "array" },
+            "阻塞项": { "type": "array" }
           }
         },
-        "metadata": {
+        "元信息": {
           "type": "object",
           "properties": {
-            "created_at": { "type": ["string", "null"] },
-            "updated_at": { "type": ["string", "null"] },
-            "created_by": { "type": "string" },
-            "version": { "type": "number" }
+            "创建时间": { "type": ["string", "null"] },
+            "更新时间": { "type": ["string", "null"] },
+            "创建者": { "type": "string" },
+            "版本": { "type": "number" }
           }
         }
       },
-      "required": ["id", "name", "status"]
+      "required": ["编号", "名称", "状态"]
     }
   },
-  "required": ["task"]
+  "required": ["任务"]
 }

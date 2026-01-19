@@ -1,112 +1,117 @@
-# DataForge AI - Structured Conventions
-# Machine-readable project conventions for AI assistants
+# DataForge AI - 结构化规范
+# 机器可读的项目规范，供 AI 助手解析使用
 
-project:
-  name: DataForge AI
-  type: portfolio-demo
-  purpose: Job-seeking demonstration of big data + AI/LLM skills
-  production_ready: false
-  languages:
+项目:
+  名称: DataForge AI
+  类型: 作品集演示
+  目的: 展示大数据 + AI/LLM 技术能力，用于求职
+  生产就绪: false
+  开发语言:
     - yaml
     - markdown
     - d2
-    - python    # future
-    - java      # future
-    - scala     # future
+    - python    # 后续
+    - java      # 后续
+    - scala     # 后续
 
-tech_stack:
-  messaging: Apache Kafka
-  stream_processing: Apache Flink
-  batch_processing: Apache Spark
-  data_lake:
-    format: Apache Paimon
-    storage: MinIO
-  vector_db: Milvus
-  search: Elasticsearch
-  cache: Redis
-  olap: Apache Doris
-  orchestration: Apache Airflow
-  monitoring:
-    metrics: Prometheus
-    visualization: Grafana
-  diagrams: D2
+技术栈:
+  消息队列: Apache Kafka
+  流处理: Apache Flink
+  批处理: Apache Spark
+  数据湖:
+    格式: Apache Paimon
+    存储: MinIO
+  向量数据库: Milvus
+  全文检索: Elasticsearch
+  缓存: Redis
+  OLAP: Apache Doris
+  编排调度: Apache Airflow
+  监控:
+    指标采集: Prometheus
+    可视化: Grafana
+  图表: D2
 
-file_structure:
+文件结构:
   makefile:
-    entry: Makefile
-    modules: makefiles/*.mk
+    入口: Makefile
+    模块: makefiles/*.mk
   docker:
-    base: docker/compose.base.yml
-    storage: docker/compose.storage.yml
-    compute: docker/compose.compute.yml
-    orchestration: docker/compose.orchestration.yml
-    analytics: docker/compose.analytics.yml
-    monitoring: docker/compose.monitoring.yml
-  docs:
-    main: docs/ARCHITECTURE.md
-    resume: docs/RESUME_DESCRIPTION.md
-    diagrams_source: docs/diagrams/*.d2
-    diagrams_output: docs/images/*.svg
-  ai_context: .ai-context/
+    基础: docker/compose.base.yml
+    存储: docker/compose.storage.yml
+    计算: docker/compose.compute.yml
+    编排: docker/compose.orchestration.yml
+    分析: docker/compose.analytics.yml
+    监控: docker/compose.monitoring.yml
+  文档:
+    架构: docs/ARCHITECTURE.md
+    简历: docs/RESUME_DESCRIPTION.md
+    图表源码: docs/diagrams/*.d2
+    图表输出: docs/images/*.svg
+  AI上下文: .ai-context/
 
-conventions:
+代码规范:
   makefile:
-    output_function: printf    # NOT echo
-    help_annotation: "## "     # Comments for auto-help
-    colors:
+    输出函数: printf              # 不用 echo
+    帮助注释: "## "               # 自动生成帮助
+    颜色变量:
       - GREEN
       - YELLOW  
       - CYAN
       - RED
-      - NC      # No Color / Reset
-    modular: true
+      - NC                        # 重置颜色
+    模块化: true
   
   docker_compose:
-    cross_file_anchors: false  # NOT supported
-    self_contained: true       # Each file standalone
-    network_name: dataforge
-    container_prefix: dataforge-
-    healthcheck: required
+    跨文件锚点: false             # 不支持
+    独立完整: true                # 每个文件独立
+    网络名称: dataforge
+    容器前缀: dataforge-
+    健康检查: 必需
   
-  d2_diagrams:
-    theme: 200
-    layout: elk
-    pad: 20
-    avoid:
-      - external_icon_urls     # Causes 403 errors
-      - near_right_attribute   # Invalid, use top-center/bottom-center
-    caution:
-      - markdown_blocks        # No special chars after closing |
+  d2图表:
+    主题: 200
+    布局: elk
+    内边距: 20
+    禁止:
+      - 外部图标URL              # 会导致 403 错误
+      - near_right属性           # 无效，用 top-center/bottom-center
+    注意:
+      - markdown块               # 结束符后不要有特殊字符
   
-  general:
-    chinese_comments: allowed
-    focus: architecture_demonstration
+  通用:
+    中文注释: 允许
+    重点: 架构演示
 
-commands:
-  help: make help
-  start:
-    all: make docker-up
-    storage: make docker-storage
-    compute: make docker-compute
-    monitoring: make docker-monitoring
-  stop:
-    all: make docker-down
-  diagrams:
-    generate: make diagrams
-  info:
-    urls: make urls
+命令:
+  帮助: make help
+  启动:
+    全部: make docker-up
+    存储: make docker-storage
+    计算: make docker-compute
+    监控: make docker-monitoring
+  停止:
+    全部: make docker-down
+  图表:
+    生成: make diagrams
+  信息:
+    服务地址: make urls
+  并行开发:
+    创建工作区: make parallel-setup AGENTS=3
+    查看状态: make parallel-status
+    创建任务: make task-new NAME=xxx
+    任务列表: make task-list
 
-ci_cd:
-  diagrams:
-    committed: false           # SVGs are gitignored
-    generator: github_actions
-    workflow: .github/workflows/generate-diagrams.yml
+CI_CD:
+  图表:
+    是否提交: false               # SVG 在 gitignore 中
+    生成方式: github_actions
+    工作流: .github/workflows/generate-diagrams.yml
 
-architecture_metrics:
-  llm_training_pipeline:
-    throughput: "50TB+/day"
-    dedup_capacity: "10B docs in 4 hours"
-  rag_knowledge_base:
-    sync_latency: "<5s"
-    vector_p99: "<50ms"
-    e2e_latency: "<500ms"
+架构指标:
+  LLM训练流水线:
+    吞吐量: "50TB+/天"
+    去重能力: "10亿文档 4小时"
+  RAG知识库:
+    同步延迟: "<5秒"
+    向量检索P99: "<50ms"
+    端到端延迟: "<500ms"
