@@ -1,0 +1,95 @@
+# yaml-language-server: $schema=./_schema.json
+# Task Example: Kafka Producer Implementation
+
+task:
+  id: "task-001"
+  name: "实现 Kafka Producer 模块"
+  status: "pending"
+  priority: "high"
+  
+  assignment:
+    agent: "agent1"
+    branch: "agent/kafka-producer"
+    worktree: "../data-forge-ai-agent1"
+    assigned_at: null
+  
+  description: |
+    实现数据管道中的 Kafka 消息生产者模块。
+    该模块负责将清洗后的训练数据发送到 Kafka 消息队列，
+    供下游的 Flink 流处理作业消费。
+  
+  objectives:
+    - "创建 KafkaProducerService 基础类"
+    - "实现 JSON 和 Avro 序列化器"
+    - "实现批量发送和缓冲机制"
+    - "添加重试逻辑（指数退避）"
+    - "集成 Prometheus 指标"
+    - "编写单元测试和集成测试"
+  
+  scope:
+    allowed_paths:
+      - "src/data-pipeline/kafka/producer/"
+      - "tests/data-pipeline/kafka/producer/"
+      - "docs/data-pipeline/kafka-producer.md"
+    forbidden_paths:
+      - "src/data-pipeline/kafka/consumer/"
+      - "src/shared/"
+      - "*.lock"
+      - ".ai-context/"
+  
+  dependencies:
+    requires: []
+    blocks:
+      - "task-003"
+  
+  interfaces:
+    provides:
+      - name: "KafkaProducerService"
+        type: "class"
+        path: "src/data-pipeline/kafka/producer/service.py"
+    consumes:
+      - name: "MessageSchema"
+        type: "class"
+        from_task: "task-000"
+  
+  technical_requirements:
+    language: "python"
+    framework: "confluent-kafka"
+    patterns:
+      - "Factory Pattern"
+      - "Circuit Breaker"
+    testing:
+      required: true
+      coverage_min: 80
+      types:
+        - "unit"
+        - "integration"
+  
+  acceptance_criteria:
+    - "单元测试覆盖率 >= 80%"
+    - "集成测试通过"
+    - "支持 10000 msg/s 吞吐量"
+    - "重试机制正确处理故障"
+  
+  references:
+    docs:
+      - "docs/ARCHITECTURE.md#data-pipeline"
+    examples:
+      - "src/data-pipeline/spark/"
+    related_tasks:
+      - "task-002"
+      - "task-003"
+  
+  progress:
+    started_at: null
+    completed_at: null
+    estimated_hours: 8
+    actual_hours: null
+    notes: []
+    blockers: []
+  
+  metadata:
+    created_at: "2024-01-20T10:00:00Z"
+    updated_at: "2024-01-20T10:00:00Z"
+    created_by: "human"
+    version: 1

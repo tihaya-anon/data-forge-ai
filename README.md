@@ -210,10 +210,41 @@ dataforge-ai/
 │   ├── ARCHITECTURE.md              # 架构设计文档
 │   └── RESUME_DESCRIPTION.md        # 简历描述模板
 │
+├── 📂 .ai-context/                  # AI 助手上下文
+│   ├── CONTEXT.md                   # 主上下文文件
+│   └── conventions.yaml             # 结构化规范数据
+│
 ├── 📄 docker-compose.yml            # 本地开发环境
 ├── 📄 Makefile                      # 构建脚本
 └── 📄 README.md                     # 项目说明
 ```
+
+---
+
+## 🤖 AI Context System
+
+本项目采用**工具无关的 AI 上下文系统**，统一管理项目信息，支持各种 AI 编程助手：
+
+| 文件 | 说明 |
+|------|------|
+| `.ai-context/CONTEXT.md` | 📖 主上下文文件（人类可读） |
+| `.ai-context/conventions.yaml` | 📊 结构化规范数据（机器可读） |
+| `CLAUDE.md` | 🔗 Claude Code 兼容入口 |
+| `.cursorrules` | 🔗 Cursor IDE 兼容入口 |
+
+### 设计原则
+
+1. **单一数据源** - 所有 AI 上下文信息集中在 `.ai-context/` 目录
+2. **工具兼容** - 各 AI 工具的专用文件只是简单引用，避免重复
+3. **易于维护** - 修改一处，所有工具自动获取最新信息
+
+### 支持的 AI 工具
+
+- ✅ Claude Code (Anthropic)
+- ✅ Cursor IDE
+- ✅ GitHub Copilot
+- ✅ Windsurf / Codeium
+- ✅ 其他读取项目文件的 AI 助手
 
 ---
 

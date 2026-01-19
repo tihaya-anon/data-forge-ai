@@ -34,6 +34,7 @@ NC := \033[0m
 include makefiles/diagrams.mk
 include makefiles/docker.mk
 include makefiles/dev.mk
+include makefiles/parallel.mk
 
 # -------------------------------------------
 # Help Target (Auto-generated from comments)
@@ -67,6 +68,11 @@ help: ## Show this help message
 	@printf "\n"
 	@printf "$(GREEN)Development:$(NC)\n"
 	@grep -hE '^(dev-|lint|format|test|docs-|clean|tree)[a-zA-Z_-]*:.*?## .*$$' $(MAKEFILE_LIST) | \
+		sed 's/:.*## /:/' | \
+		awk 'BEGIN {FS = ":"}; {printf "  $(YELLOW)%-24s$(NC) %s\n", $$1, $$2}'
+	@printf "\n"
+	@printf "$(GREEN)Parallel Development:$(NC)\n"
+	@grep -hE '^(parallel-|worktree-|task-)[a-zA-Z_-]*:.*?## .*$$' $(MAKEFILE_LIST) | \
 		sed 's/:.*## /:/' | \
 		awk 'BEGIN {FS = ":"}; {printf "  $(YELLOW)%-24s$(NC) %s\n", $$1, $$2}'
 	@printf "\n"

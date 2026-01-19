@@ -13,6 +13,7 @@ docs/images/*.png
 # -------------------------------------------
 .idea/
 .vscode/
+.codemax/
 *.swp
 *.swo
 *~

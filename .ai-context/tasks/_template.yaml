@@ -1,0 +1,88 @@
+# yaml-language-server: $schema=./_schema.json
+# Task Template
+# Copy this file to create a new task: cp _template.yaml <task-name>.yaml
+
+task:
+  # === 基本信息 ===
+  id: "task-xxx"
+  name: "任务名称"
+  status: "pending"                 # pending | in_progress | completed | blocked
+  priority: "medium"                # low | medium | high | critical
+  
+  # === 分配信息 ===
+  assignment:
+    agent: ""
+    branch: ""
+    worktree: ""
+    assigned_at: null
+  
+  # === 任务描述 ===
+  description: |
+    详细描述任务目标和背景。
+    可以使用多行文本。
+  
+  # === 具体目标 ===
+  objectives:
+    - "目标 1"
+    - "目标 2"
+    - "目标 3"
+  
+  # === 工作范围 ===
+  scope:
+    allowed_paths:
+      - "src/module-name/"
+      - "tests/module-name/"
+      - "docs/module-name.md"
+    forbidden_paths:
+      - "src/shared/"
+      - "*.lock"
+      - ".ai-context/"
+  
+  # === 依赖关系 ===
+  dependencies:
+    requires: []
+    blocks: []
+  
+  # === 接口约定 ===
+  interfaces:
+    provides: []
+    consumes: []
+  
+  # === 技术要求 ===
+  technical_requirements:
+    language: ""
+    framework: ""
+    patterns: []
+    testing:
+      required: true
+      coverage_min: 80
+      types:
+        - "unit"
+  
+  # === 验收标准 ===
+  acceptance_criteria:
+    - "所有测试通过"
+    - "代码覆盖率达标"
+    - "文档完整"
+  
+  # === 参考资料 ===
+  references:
+    docs: []
+    examples: []
+    related_tasks: []
+  
+  # === 进度记录 ===
+  progress:
+    started_at: null
+    completed_at: null
+    estimated_hours: null
+    actual_hours: null
+    notes: []
+    blockers: []
+  
+  # === 元信息 ===
+  metadata:
+    created_at: null
+    updated_at: null
+    created_by: ""
+    version: 1

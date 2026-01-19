@@ -1,0 +1,112 @@
+# DataForge AI - Structured Conventions
+# Machine-readable project conventions for AI assistants
+
+project:
+  name: DataForge AI
+  type: portfolio-demo
+  purpose: Job-seeking demonstration of big data + AI/LLM skills
+  production_ready: false
+  languages:
+    - yaml
+    - markdown
+    - d2
+    - python    # future
+    - java      # future
+    - scala     # future
+
+tech_stack:
+  messaging: Apache Kafka
+  stream_processing: Apache Flink
+  batch_processing: Apache Spark
+  data_lake:
+    format: Apache Paimon
+    storage: MinIO
+  vector_db: Milvus
+  search: Elasticsearch
+  cache: Redis
+  olap: Apache Doris
+  orchestration: Apache Airflow
+  monitoring:
+    metrics: Prometheus
+    visualization: Grafana
+  diagrams: D2
+
+file_structure:
+  makefile:
+    entry: Makefile
+    modules: makefiles/*.mk
+  docker:
+    base: docker/compose.base.yml
+    storage: docker/compose.storage.yml
+    compute: docker/compose.compute.yml
+    orchestration: docker/compose.orchestration.yml
+    analytics: docker/compose.analytics.yml
+    monitoring: docker/compose.monitoring.yml
+  docs:
+    main: docs/ARCHITECTURE.md
+    resume: docs/RESUME_DESCRIPTION.md
+    diagrams_source: docs/diagrams/*.d2
+    diagrams_output: docs/images/*.svg
+  ai_context: .ai-context/
+
+conventions:
+  makefile:
+    output_function: printf    # NOT echo
+    help_annotation: "## "     # Comments for auto-help
+    colors:
+      - GREEN
+      - YELLOW  
+      - CYAN
+      - RED
+      - NC      # No Color / Reset
+    modular: true
+  
+  docker_compose:
+    cross_file_anchors: false  # NOT supported
+    self_contained: true       # Each file standalone
+    network_name: dataforge
+    container_prefix: dataforge-
+    healthcheck: required
+  
+  d2_diagrams:
+    theme: 200
+    layout: elk
+    pad: 20
+    avoid:
+      - external_icon_urls     # Causes 403 errors
+      - near_right_attribute   # Invalid, use top-center/bottom-center
+    caution:
+      - markdown_blocks        # No special chars after closing |
+  
+  general:
+    chinese_comments: allowed
+    focus: architecture_demonstration
+
+commands:
+  help: make help
+  start:
+    all: make docker-up
+    storage: make docker-storage
+    compute: make docker-compute
+    monitoring: make docker-monitoring
+  stop:
+    all: make docker-down
+  diagrams:
+    generate: make diagrams
+  info:
+    urls: make urls
+
+ci_cd:
+  diagrams:
+    committed: false           # SVGs are gitignored
+    generator: github_actions
+    workflow: .github/workflows/generate-diagrams.yml
+
+architecture_metrics:
+  llm_training_pipeline:
+    throughput: "50TB+/day"
+    dedup_capacity: "10B docs in 4 hours"
+  rag_knowledge_base:
+    sync_latency: "<5s"
+    vector_p99: "<50ms"
+    e2e_latency: "<500ms"
