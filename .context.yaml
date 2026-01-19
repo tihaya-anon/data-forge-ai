@@ -1,0 +1,78 @@
+project:
+  name: DataForge AI
+  type: portfolio-demo
+  description: |
+    Big Data + AI platform combining LLM Training Data Engineering 
+    and RAG Knowledge Base for job-seeking demonstration.
+
+tech_stack:
+  messaging: Apache Kafka
+  stream: Apache Flink
+  batch: Apache Spark
+  lake: Apache Paimon + MinIO
+  vector_db: Milvus
+  search: Elasticsearch
+  cache: Redis
+  olap: Apache Doris
+  orchestration: Apache Airflow
+  monitoring: Prometheus + Grafana
+  diagrams: D2
+
+structure:
+  makefile:
+    main: Makefile
+    modules:
+      - makefiles/diagrams.mk
+      - makefiles/docker.mk
+      - makefiles/dev.mk
+  
+  docker:
+    base: docker/compose.base.yml
+    services:
+      storage: docker/compose.storage.yml
+      compute: docker/compose.compute.yml
+      orchestration: docker/compose.orchestration.yml
+      analytics: docker/compose.analytics.yml
+      monitoring: docker/compose.monitoring.yml
+  
+  docs:
+    architecture: docs/ARCHITECTURE.md
+    resume: docs/RESUME_DESCRIPTION.md
+    diagrams_src: docs/diagrams/*.d2
+    diagrams_out: docs/images/*.svg  # gitignored
+
+conventions:
+  makefile:
+    - Use printf for colored output
+    - Add "## comment" for help generation
+    - Colors: GREEN, YELLOW, CYAN, RED, NC
+  
+  docker_compose:
+    - No cross-file YAML anchors
+    - Network name: dataforge
+    - Container prefix: dataforge-
+    - Include healthcheck for all services
+  
+  d2_diagrams:
+    theme: 200
+    layout: elk
+    pad: 20
+    rules:
+      - No external icon URLs
+      - No "near: right" attribute
+      - Careful with markdown blocks
+
+commands:
+  help: make help
+  start_all: make docker-up
+  start_storage: make docker-storage
+  start_compute: make docker-compute
+  start_monitoring: make docker-monitoring
+  stop_all: make docker-down
+  generate_diagrams: make diagrams
+  show_urls: make urls
+
+notes:
+  - SVG files are gitignored and built by GitHub Actions
+  - This is a demo project, not production code
+  - Chinese comments and labels are acceptable
