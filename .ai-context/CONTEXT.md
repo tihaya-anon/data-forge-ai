@@ -4,33 +4,64 @@
 
 ## 项目概览
 
-| 项目 | 说明 |
-|------|------|
-| **名称** | DataForge AI |
-| **类型** | 作品集 / 演示项目 |
+| 项目     | 说明                                   |
+| -------- | -------------------------------------- |
+| **名称** | DataForge AI                           |
+| **类型** | 作品集 / 演示项目                      |
 | **目的** | 展示大数据 + AI/LLM 技术能力，用于求职 |
-| **状态** | 仅供演示，非生产代码 |
+| **状态** | 仅供演示，非生产代码                   |
 
 ### 本项目展示的能力
 
 1. **LLM 训练数据工程** - 大规模数据处理流水线，用于 LLM 预训练
 2. **RAG 智能知识库** - 企业级智能问答系统，支持混合检索
 
+## 开发环境
+
+本项目使用双机开发环境：
+
+| 机器     | 系统                       | 用途                    | 连接方式      |
+| -------- | -------------------------- | ----------------------- | ------------- |
+| **本机** | macOS                      | 主开发机、IDE、Git 操作 | -             |
+| **远程** | Windows WSL (Ubuntu 24.04) | Docker 服务、重计算任务 | `ssh dev-win` |
+
+### 远程机器使用
+
+```bash
+# 连接远程机器
+ssh dev-win
+
+# 在远程执行命令（单次）
+ssh dev-win "cd /path/to/project && make docker-up"
+
+# 同步代码到远程（如需要）
+rsync -avz --exclude '.git' ./ dev-win:/path/to/project/
+```
+
+### 服务部署建议
+
+| 服务         | 建议部署位置   | 原因                 |
+| ------------ | -------------- | -------------------- |
+| Docker 容器  | 远程 (dev-win) | 资源充足、不影响本机 |
+| IDE / 编辑器 | 本机 (Mac)     | 体验流畅             |
+| Git 操作     | 本机 (Mac)     | SSH key 配置         |
+| 重计算任务   | 远程 (dev-win) | CPU/内存资源         |
+
 ## 技术栈
 
-| 层级 | 技术 |
-|------|------|
-| 消息队列 | Apache Kafka |
-| 流处理 | Apache Flink |
-| 批处理 | Apache Spark |
-| 数据湖 | Apache Paimon + MinIO |
-| 向量数据库 | Milvus |
-| 全文检索 | Elasticsearch |
-| 缓存 | Redis |
-| OLAP | Apache Doris |
-| 编排调度 | Apache Airflow |
-| 监控 | Prometheus + Grafana |
-| 图表 | D2 (Diagrams as Code) |
+| 层级       | 技术                  |
+| ---------- | --------------------- |
+| 消息队列   | Apache Kafka          |
+| 流处理     | Apache Flink          |
+| 批处理     | Apache Spark          |
+| 数据湖     | Apache Paimon + MinIO |
+| 向量数据库 | Milvus                |
+| 全文检索   | Elasticsearch         |
+| 缓存       | Redis                 |
+| OLAP       | Apache Doris          |
+| 编排调度   | Apache Airflow        |
+| 监控       | Prometheus + Grafana  |
+| 图表       | D2 (Diagrams as Code) |
 
 ## 项目结构
 
@@ -89,7 +120,20 @@ make urls
 # 并行开发
 make parallel-setup AGENTS=3   # 创建 3 个并行工作区
 make parallel-status           # 查看工作区状态
-make task-list                 # 列出任务
+make task-analyze              # 分析任务 DAG
+```
+
+### 远程执行命令
+
+```bash
+# 在远程启动 Docker 服务
+ssh dev-win "cd ~/remote-env/data-forge-ai && make docker-up"
+
+# 在远程查看日志
+ssh dev-win "cd ~/remote-env/data-forge-ai && make docker-logs"
+
+# 在远程停止服务
+ssh dev-win "cd ~/remote-env/data-forge-ai && make docker-down"
 ```
 
 ## 代码规范
@@ -148,15 +192,16 @@ make task-list                 # 列出任务
 
 ## 修改指南
 
-| 任务 | 操作 |
-|------|------|
-| 添加 Docker 服务 | 创建/修改 `docker/compose.*.yml` |
-| 添加图表 | 在 `docs/diagrams/` 创建 `.d2` 文件，运行 `make diagrams` |
-| 添加 Make 命令 | 在 `makefiles/*.mk` 添加 target 并加上 `## 注释` |
-| 修改架构 | 同时更新图表和 `docs/ARCHITECTURE.md` |
+| 任务             | 操作                                                      |
+| ---------------- | --------------------------------------------------------- |
+| 添加 Docker 服务 | 创建/修改 `docker/compose.*.yml`                          |
+| 添加图表         | 在 `docs/diagrams/` 创建 `.d2` 文件，运行 `make diagrams` |
+| 添加 Make 命令   | 在 `makefiles/*.mk` 添加 target 并加上 `## 注释`          |
+| 修改架构         | 同时更新图表和 `docs/ARCHITECTURE.md`                     |
 
 ## 重要说明
 
 1. **SVG 文件不提交** - 由 GitHub Actions CI 生成
 2. **这是演示项目** - 非生产级代码
 3. **开发语言**：YAML、Markdown、D2，后续会有 Python/Java/Scala 实现
+4. **双机开发** - 本机编码，远程运行服务
