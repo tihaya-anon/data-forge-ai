@@ -33,10 +33,38 @@ ssh dev-win
 
 # 在远程执行命令（单次）
 ssh dev-win "cd /path/to/project && make docker-up"
-
-# 同步代码到远程（如需要）
-rsync -avz --exclude '.git' ./ dev-win:/path/to/project/
 ```
+
+### 代码同步方案
+
+**方案一：rsync 直接同步（推荐，实时性高）**
+
+```bash
+# 同步代码到远程
+rsync -avz --exclude '.git' --exclude 'node_modules' --exclude '__pycache__' \
+  ./ dev-win:/path/to/project/
+
+# 监听变化自动同步（需安装 fswatch）
+fswatch -o . | xargs -n1 -I{} rsync -avz --exclude '.git' ./ dev-win:/path/to/project/
+```
+
+**方案二：通过 GitHub 同步（备选，适合多人协作）**
+
+```bash
+# 本机：提交并推送
+git add -A && git commit -m "update" && git push
+
+# 远程：拉取最新代码
+ssh dev-win "cd /path/to/project && git pull"
+
+# 或一条命令完成
+git push && ssh dev-win "cd /path/to/project && git pull"
+```
+
+| 方案   | 优点                 | 缺点               |
+| ------ | -------------------- | ------------------ |
+| rsync  | 实时、不需要提交     | 需要网络直连       |
+| GitHub | 有版本记录、支持多人 | 需要先提交、有延迟 |
 
 ### 服务部署建议
 
