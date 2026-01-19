@@ -1,0 +1,353 @@
+# DataForge AI - 系统架构全景图
+# Author: DataForge Team
+# Description: 展示整个平台的分层架构
+
+direction: down
+
+title: {
+  label: DataForge AI - System Architecture
+  near: top-center
+  shape: text
+  style: {
+    font-size: 28
+    bold: true
+    font-color: "#1a237e"
+  }
+}
+
+# ==========================================
+# 数据源层
+# ==========================================
+sources: Data Sources {
+  style: {
+    fill: "#e3f2fd"
+    stroke: "#1565c0"
+    border-radius: 8
+  }
+  
+  grid-columns: 6
+  
+  crawl: Common Crawl {
+    shape: document
+    style.fill: "#bbdefb"
+  }
+  wiki: Wikipedia {
+    shape: document
+    style.fill: "#bbdefb"
+  }
+  github: GitHub Code {
+    shape: document
+    style.fill: "#bbdefb"
+  }
+  docs: Enterprise Docs {
+    shape: document
+    style.fill: "#bbdefb"
+  }
+  mysql: MySQL/PG {
+    shape: cylinder
+    style.fill: "#90caf9"
+  }
+  api: External APIs {
+    shape: cloud
+    style.fill: "#64b5f6"
+  }
+}
+
+# ==========================================
+# 数据采集层
+# ==========================================
+ingestion: Data Ingestion {
+  style: {
+    fill: "#fff8e1"
+    stroke: "#f9a825"
+    border-radius: 8
+  }
+  
+  kafka: Apache Kafka {
+    shape: queue
+    style: {
+      fill: "#ffca28"
+      stroke: "#f57f17"
+      font-color: "#000"
+      bold: true
+    }
+  }
+  
+  connectors: Connectors {
+    style.fill: "#fff59d"
+    
+    grid-columns: 3
+    debezium: Debezium CDC
+    file-src: File Source
+    http-src: HTTP Source
+  }
+}
+
+# ==========================================
+# 计算层
+# ==========================================
+compute: Compute Layer {
+  style: {
+    fill: "#fce4ec"
+    stroke: "#c2185b"
+    border-radius: 8
+  }
+  
+  spark: Apache Spark {
+    shape: hexagon
+    style: {
+      fill: "#e65100"
+      font-color: "#fff"
+      bold: true
+    }
+    label: "Apache Spark\n(Batch Processing)"
+  }
+  
+  flink: Apache Flink {
+    shape: hexagon
+    style: {
+      fill: "#d81b60"
+      font-color: "#fff"
+      bold: true
+    }
+    label: "Apache Flink\n(Stream Processing)"
+  }
+  
+  ray: Ray {
+    shape: hexagon
+    style: {
+      fill: "#7b1fa2"
+      font-color: "#fff"
+      bold: true
+    }
+    label: "Ray\n(Distributed ML)"
+  }
+}
+
+# ==========================================
+# 存储层
+# ==========================================
+storage: Storage Layer {
+  style: {
+    fill: "#e8f5e9"
+    stroke: "#2e7d32"
+    border-radius: 8
+  }
+  
+  paimon: Apache Paimon {
+    shape: cylinder
+    style: {
+      fill: "#43a047"
+      font-color: "#fff"
+      bold: true
+    }
+    label: "Paimon\n(Data Lake)"
+  }
+  
+  milvus: Milvus {
+    shape: cylinder
+    style: {
+      fill: "#00acc1"
+      font-color: "#fff"
+      bold: true
+    }
+    label: "Milvus\n(Vector DB)"
+  }
+  
+  redis: Redis {
+    shape: cylinder
+    style: {
+      fill: "#d32f2f"
+      font-color: "#fff"
+      bold: true
+    }
+    label: "Redis\n(Cache)"
+  }
+  
+  es: Elasticsearch {
+    shape: cylinder
+    style: {
+      fill: "#fdd835"
+      font-color: "#000"
+      bold: true
+    }
+    label: "ES\n(Full-text)"
+  }
+}
+
+# ==========================================
+# 服务层
+# ==========================================
+services: Service Layer {
+  style: {
+    fill: "#ede7f6"
+    stroke: "#512da8"
+    border-radius: 8
+  }
+  
+  rag-svc: RAG Service {
+    style: {
+      fill: "#7c4dff"
+      font-color: "#fff"
+      bold: true
+    }
+  }
+  
+  data-svc: Data Service {
+    style: {
+      fill: "#651fff"
+      font-color: "#fff"
+      bold: true
+    }
+  }
+  
+  doris: Apache Doris {
+    shape: cylinder
+    style: {
+      fill: "#304ffe"
+      font-color: "#fff"
+      bold: true
+    }
+    label: "Doris\n(OLAP)"
+  }
+}
+
+# ==========================================
+# 应用层
+# ==========================================
+apps: Applications {
+  style: {
+    fill: "#efebe9"
+    stroke: "#5d4037"
+    border-radius: 8
+  }
+  
+  grid-columns: 3
+  
+  llm-train: LLM Training {
+    shape: rectangle
+    style.fill: "#bcaaa4"
+  }
+  
+  rag-chat: RAG Chat {
+    shape: rectangle
+    style.fill: "#bcaaa4"
+  }
+  
+  dashboard: Dashboard {
+    shape: rectangle
+    style.fill: "#bcaaa4"
+  }
+}
+
+# ==========================================
+# 编排层
+# ==========================================
+orchestration: Orchestration & Governance {
+  style: {
+    fill: "#eceff1"
+    stroke: "#455a64"
+    border-radius: 8
+  }
+  
+  grid-columns: 3
+  
+  airflow: Airflow {
+    style.fill: "#00bfa5"
+    style.font-color: "#fff"
+  }
+  datahub: DataHub {
+    style.fill: "#26a69a"
+    style.font-color: "#fff"
+  }
+  prometheus: Prometheus\n+ Grafana {
+    style.fill: "#e64a19"
+    style.font-color: "#fff"
+  }
+}
+
+# ==========================================
+# 连接关系
+# ==========================================
+
+# 数据源 -> 采集
+sources -> ingestion.kafka: Ingest {
+  style.stroke: "#1565c0"
+}
+
+# 采集 -> 计算
+ingestion.kafka -> compute.flink: Real-time {
+  style: {
+    stroke: "#d81b60"
+    stroke-width: 2
+  }
+}
+ingestion.kafka -> compute.spark: Batch {
+  style: {
+    stroke: "#e65100"
+    stroke-width: 2
+  }
+}
+
+# 计算 -> 存储
+compute.flink -> storage.milvus: Vectors {
+  style.stroke: "#00acc1"
+}
+compute.flink -> storage.paimon: Stream Data {
+  style.stroke: "#43a047"
+}
+compute.spark -> storage.paimon: Batch Data {
+  style.stroke: "#43a047"
+}
+compute.ray -> storage.milvus: Embeddings {
+  style.stroke: "#00acc1"
+}
+
+# 存储 -> 服务
+storage.milvus -> services.rag-svc {
+  style.stroke: "#7c4dff"
+}
+storage.paimon -> services.data-svc {
+  style.stroke: "#651fff"
+}
+storage.redis -> services.rag-svc: Cache {
+  style.stroke: "#d32f2f"
+  style.stroke-dash: 3
+}
+storage.es -> services.rag-svc: Full-text {
+  style.stroke: "#fdd835"
+}
+storage.paimon -> services.doris: Analytics {
+  style.stroke: "#304ffe"
+}
+
+# 服务 -> 应用
+services.data-svc -> apps.llm-train {
+  style.stroke: "#5d4037"
+}
+services.rag-svc -> apps.rag-chat {
+  style.stroke: "#5d4037"
+}
+services.doris -> apps.dashboard {
+  style.stroke: "#5d4037"
+}
+
+# 编排（虚线表示管理关系）
+orchestration.airflow -> compute: Schedule {
+  style: {
+    stroke: "#455a64"
+    stroke-dash: 5
+  }
+}
+orchestration.datahub -> storage: Metadata {
+  style: {
+    stroke: "#455a64"
+    stroke-dash: 5
+  }
+}
+orchestration.prometheus -> services: Monitor {
+  style: {
+    stroke: "#455a64"
+    stroke-dash: 5
+  }
+}

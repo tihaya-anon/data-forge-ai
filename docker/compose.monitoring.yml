@@ -1,0 +1,70 @@
+# ===========================================
+# DataForge AI - Monitoring Services
+# ===========================================
+# Prometheus, Grafana
+#
+# Usage: docker compose -f docker/compose.base.yml -f docker/compose.monitoring.yml up -d
+
+services:
+  # -------------------------------------------
+  # Prometheus (Metrics Collection)
+  # -------------------------------------------
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    container_name: dataforge-prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.enable-lifecycle'
+      - '--storage.tsdb.retention.time=15d'
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    networks:
+      - dataforge-net
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:9090/-/healthy"]
+    <<: [*restart-policy, *logging]
+
+  # -------------------------------------------
+  # Grafana (Visualization)
+  # -------------------------------------------
+  grafana:
+    image: grafana/grafana:10.2.2
+    container_name: dataforge-grafana
+    environment:
+      <<: *common-env
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_INSTALL_PLUGINS: grafana-clock-panel,grafana-simple-json-datasource
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      prometheus:
+        condition: service_healthy
+    networks:
+      - dataforge-net
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
+    <<: [*restart-policy, *logging]
+
+networks:
+  dataforge-net:
+    external: true
+    name: dataforge-ai_dataforge-net
+
+volumes:
+  prometheus-data:
+    external: true
+    name: dataforge-prometheus-data
+  grafana-data:
+    external: true
+    name: dataforge-grafana-data

@@ -1,0 +1,307 @@
+# MinHash 去重算法流程
+# 展示 MinHash + LSH 去重的详细步骤
+
+direction: down
+
+title: {
+  label: MinHash Deduplication Algorithm
+  near: top-center
+  shape: text
+  style: {
+    font-size: 24
+    bold: true
+    font-color: "#2e7d32"
+  }
+}
+
+# ==========================================
+# 输入
+# ==========================================
+input: "Input Documents" {
+  shape: document
+  style: {
+    fill: "#e3f2fd"
+    stroke: "#1565c0"
+    font-size: 16
+  }
+  label: "Input Documents\n10 Billion docs"
+}
+
+# ==========================================
+# Step 1: 预处理
+# ==========================================
+preprocess: "Step 1: Text Preprocessing" {
+  style: {
+    fill: "#fff3e0"
+    stroke: "#e65100"
+    border-radius: 8
+  }
+  
+  tokenize: "Tokenization" {
+    style.fill: "#ffe0b2"
+    label: "Tokenization\njieba / nltk"
+  }
+  
+  stopword: "Remove\nStopwords" {
+    style.fill: "#ffcc80"
+  }
+  
+  ngram: "N-gram\nGeneration" {
+    style: {
+      fill: "#ffb74d"
+      font-color: "#fff"
+    }
+    label: "N-gram\nn = 5"
+  }
+  
+  shingle: "Shingle Set" {
+    style.fill: "#ffa726"
+    style.font-color: "#fff"
+    label: "Shingle Set\n{s1, s2, s3, ...}"
+  }
+  
+  tokenize -> stopword -> ngram -> shingle
+}
+
+# ==========================================
+# Step 2: MinHash 签名
+# ==========================================
+minhash: "Step 2: MinHash Signature" {
+  style: {
+    fill: "#e8f5e9"
+    stroke: "#2e7d32"
+    border-radius: 8
+  }
+  
+  hash-funcs: "Hash Functions" {
+    style.fill: "#a5d6a7"
+    label: "128 Hash Functions\nh1, h2, ..., h128"
+  }
+  
+  compute: "Compute MinHash" {
+    style: {
+      fill: "#66bb6a"
+      font-color: "#fff"
+    }
+    label: "For each hash function:\nmin(h(shingle) for all shingles)"
+  }
+  
+  signature: "Signature Vector" {
+    style: {
+      fill: "#43a047"
+      font-color: "#fff"
+      bold: true
+    }
+    label: "Signature\n[m1, m2, ..., m128]\n128-dimensional"
+  }
+  
+  hash-funcs -> compute -> signature
+}
+
+# ==========================================
+# Step 3: LSH 分桶
+# ==========================================
+lsh: "Step 3: LSH Banding" {
+  style: {
+    fill: "#e0f7fa"
+    stroke: "#00838f"
+    border-radius: 8
+  }
+  
+  config: "LSH Configuration" {
+    style.fill: "#80deea"
+    label: "bands = 32\nrows = 4\n(32 x 4 = 128)"
+  }
+  
+  band: "Band Hashing" {
+    style: {
+      fill: "#26c6da"
+      font-color: "#fff"
+    }
+    label: "For each band:\nhash(4 rows) -> bucket_id"
+  }
+  
+  buckets: "Hash Buckets" {
+    style: {
+      fill: "#00acc1"
+      font-color: "#fff"
+      bold: true
+    }
+    label: "Buckets\nDocs in same bucket\nare candidates"
+  }
+  
+  config -> band -> buckets
+  
+  note: {
+    shape: text
+    style: {
+      font-size: 11
+      italic: true
+      font-color: "#00695c"
+    }
+    label: "Similarity threshold ~ 0.8"
+  }
+}
+
+# ==========================================
+# Step 4: 候选对生成
+# ==========================================
+candidates: "Step 4: Candidate Pairs" {
+  style: {
+    fill: "#fce4ec"
+    stroke: "#c2185b"
+    border-radius: 8
+  }
+  
+  pairs: "Same-Bucket Pairs" {
+    style.fill: "#f8bbd9"
+    label: "Generate pairs from\nsame bucket docs"
+  }
+  
+  filter: "Duplicate Filter" {
+    style: {
+      fill: "#ec407a"
+      font-color: "#fff"
+    }
+    label: "Remove duplicate\ncandidate pairs"
+  }
+  
+  pairs -> filter
+}
+
+# ==========================================
+# Step 5: 相似度验证
+# ==========================================
+verify: "Step 5: Similarity Verification" {
+  style: {
+    fill: "#ede7f6"
+    stroke: "#512da8"
+    border-radius: 8
+  }
+  
+  jaccard: "Jaccard Similarity" {
+    style.fill: "#d1c4e9"
+    label: "J(A,B) = |A∩B| / |A∪B|"
+  }
+  
+  threshold: "Threshold Check" {
+    style: {
+      fill: "#7c4dff"
+      font-color: "#fff"
+      bold: true
+    }
+    label: "similarity > 0.8 ?\n-> Duplicate!"
+  }
+  
+  jaccard -> threshold
+}
+
+# ==========================================
+# Step 6: 连通分量
+# ==========================================
+cluster: "Step 6: Connected Components" {
+  style: {
+    fill: "#fff8e1"
+    stroke: "#f9a825"
+    border-radius: 8
+  }
+  
+  union-find: "Union-Find" {
+    style: {
+      fill: "#ffca28"
+      font-color: "#000"
+    }
+    label: "Union-Find Algorithm\nGroup duplicates"
+  }
+  
+  select: "Select Representative" {
+    style: {
+      fill: "#ffa000"
+      font-color: "#fff"
+      bold: true
+    }
+    label: "Keep one doc\nper cluster"
+  }
+  
+  union-find -> select
+}
+
+# ==========================================
+# 输出
+# ==========================================
+output: "Deduplicated Docs" {
+  shape: document
+  style: {
+    fill: "#c8e6c9"
+    stroke: "#2e7d32"
+    font-size: 16
+    bold: true
+  }
+  label: "Deduplicated Documents\nUnique docs only"
+}
+
+# ==========================================
+# 连接
+# ==========================================
+input -> preprocess {
+  style.stroke: "#1565c0"
+  style.stroke-width: 2
+}
+
+preprocess -> minhash {
+  style.stroke: "#e65100"
+  style.stroke-width: 2
+}
+
+minhash -> lsh {
+  style.stroke: "#2e7d32"
+  style.stroke-width: 2
+}
+
+lsh -> candidates {
+  style.stroke: "#00838f"
+  style.stroke-width: 2
+}
+
+candidates -> verify {
+  style.stroke: "#c2185b"
+  style.stroke-width: 2
+}
+
+verify -> cluster {
+  style.stroke: "#512da8"
+  style.stroke-width: 2
+}
+
+cluster -> output {
+  style.stroke: "#f9a825"
+  style.stroke-width: 2
+}
+
+# ==========================================
+# Spark 优化说明
+# ==========================================
+spark-tips: "Spark Optimizations" {
+  style: {
+    fill: "#ffebee"
+    stroke: "#c62828"
+    border-radius: 8
+  }
+  
+  tips: {
+    shape: text
+    style.font-size: 12
+    label: |md
+      **Optimizations:**
+      - Data bucketing to reduce shuffle
+      - Broadcast small tables
+      - Salting for skew handling
+      - Adaptive threshold tuning
+      
+      **Result:**
+      - 10B docs in 4 hours
+      - 100-node Spark cluster
+      - Precision: 98%+
+    |
+  }
+}

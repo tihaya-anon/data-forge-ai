@@ -1,0 +1,55 @@
+# ===========================================
+# DataForge AI - Base Configuration
+# ===========================================
+# 基础配置和网络定义
+#
+# Usage:
+#   docker compose -f docker/compose.base.yml \
+#                  -f docker/compose.storage.yml \
+#                  -f docker/compose.compute.yml up -d
+
+name: dataforge-ai
+
+networks:
+  dataforge-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+
+volumes:
+  # Shared volumes for data persistence
+  minio-data:
+    name: dataforge-minio-data
+  kafka-data:
+    name: dataforge-kafka-data
+  redis-data:
+    name: dataforge-redis-data
+  milvus-data:
+    name: dataforge-milvus-data
+  es-data:
+    name: dataforge-es-data
+  prometheus-data:
+    name: dataforge-prometheus-data
+  grafana-data:
+    name: dataforge-grafana-data
+
+# Common configurations (YAML anchors)
+x-common-env: &common-env
+  TZ: Asia/Shanghai
+
+x-healthcheck-defaults: &healthcheck-defaults
+  interval: 30s
+  timeout: 10s
+  retries: 3
+  start_period: 40s
+
+x-restart-policy: &restart-policy
+  restart: unless-stopped
+
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"

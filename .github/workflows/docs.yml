@@ -1,0 +1,56 @@
+# GitHub Actions: Documentation site build (optional)
+# Uncomment and configure if you want to deploy docs to GitHub Pages
+
+name: Deploy Documentation
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'docs/**'
+      - 'README.md'
+  workflow_dispatch:
+
+# Uncomment below to enable GitHub Pages deployment
+# permissions:
+#   contents: read
+#   pages: write
+#   id-token: write
+
+jobs:
+  # First, generate diagrams
+  generate-diagrams:
+    uses: ./.github/workflows/generate-diagrams.yml
+    
+  # Then build and deploy docs (optional - uncomment to enable)
+  # build-docs:
+  #   needs: generate-diagrams
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     
+  #     - name: Setup Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: '20'
+  #         
+  #     - name: Install dependencies
+  #       run: |
+  #         npm install -g docsify-cli
+  #         # Or use your preferred doc generator:
+  #         # pip install mkdocs mkdocs-material
+  #         
+  #     - name: Build documentation
+  #       run: |
+  #         # For docsify (static, no build needed)
+  #         # Or for mkdocs:
+  #         # mkdocs build
+  #         echo "Documentation ready"
+  #         
+  #     - name: Deploy to GitHub Pages
+  #       uses: peaceiris/actions-gh-pages@v3
+  #       with:
+  #         github_token: ${{ secrets.GITHUB_TOKEN }}
+  #         publish_dir: ./docs

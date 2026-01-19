@@ -1,0 +1,42 @@
+# DataForge AI Prometheus Configuration
+# ==========================================
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Kafka metrics (via JMX Exporter)
+  - job_name: 'kafka'
+    static_configs:
+      - targets: ['kafka:9092']
+
+  # Spark metrics
+  - job_name: 'spark'
+    static_configs:
+      - targets: ['spark-master:8081']
+
+  # Flink metrics
+  - job_name: 'flink'
+    static_configs:
+      - targets: ['flink-jobmanager:8081']
+
+  # Milvus metrics
+  - job_name: 'milvus'
+    static_configs:
+      - targets: ['milvus:9091']
+
+  # Redis metrics (if redis-exporter is added)
+  # - job_name: 'redis'
+  #   static_configs:
+  #     - targets: ['redis-exporter:9121']
+
+  # Elasticsearch metrics (if elasticsearch-exporter is added)
+  # - job_name: 'elasticsearch'
+  #   static_configs:
+  #     - targets: ['elasticsearch-exporter:9114']

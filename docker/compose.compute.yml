@@ -1,0 +1,89 @@
+# ===========================================
+# DataForge AI - Compute Services
+# ===========================================
+# Apache Spark, Apache Flink
+#
+# Usage: docker compose -f docker/compose.base.yml -f docker/compose.compute.yml up -d
+
+services:
+  # -------------------------------------------
+  # Apache Spark (Batch Processing)
+  # -------------------------------------------
+  spark-master:
+    image: bitnami/spark:3.5
+    container_name: dataforge-spark-master
+    environment:
+      <<: *common-env
+      SPARK_MODE: master
+      SPARK_MASTER_HOST: spark-master
+      SPARK_MASTER_PORT: 7077
+      SPARK_MASTER_WEBUI_PORT: 8081
+    ports:
+      - "7077:7077"
+      - "8081:8081"
+    networks:
+      - dataforge-net
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "curl", "-f", "http://localhost:8081"]
+    <<: [*restart-policy, *logging]
+
+  spark-worker:
+    image: bitnami/spark:3.5
+    container_name: dataforge-spark-worker
+    environment:
+      <<: *common-env
+      SPARK_MODE: worker
+      SPARK_MASTER_URL: spark://spark-master:7077
+      SPARK_WORKER_MEMORY: 2G
+      SPARK_WORKER_CORES: 2
+    depends_on:
+      spark-master:
+        condition: service_healthy
+    networks:
+      - dataforge-net
+    <<: [*restart-policy, *logging]
+
+  # -------------------------------------------
+  # Apache Flink (Stream Processing)
+  # -------------------------------------------
+  flink-jobmanager:
+    image: flink:1.18-scala_2.12-java11
+    container_name: dataforge-flink-jobmanager
+    command: jobmanager
+    environment:
+      <<: *common-env
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: flink-jobmanager
+        taskmanager.numberOfTaskSlots: 4
+        parallelism.default: 2
+    ports:
+      - "8082:8081"
+    networks:
+      - dataforge-net
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "curl", "-f", "http://localhost:8081"]
+    <<: [*restart-policy, *logging]
+
+  flink-taskmanager:
+    image: flink:1.18-scala_2.12-java11
+    container_name: dataforge-flink-taskmanager
+    command: taskmanager
+    environment:
+      <<: *common-env
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: flink-jobmanager
+        taskmanager.numberOfTaskSlots: 4
+        taskmanager.memory.process.size: 2g
+    depends_on:
+      flink-jobmanager:
+        condition: service_healthy
+    networks:
+      - dataforge-net
+    <<: [*restart-policy, *logging]
+
+networks:
+  dataforge-net:
+    external: true
+    name: dataforge-ai_dataforge-net

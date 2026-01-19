@@ -1,0 +1,187 @@
+# ===========================================
+# DataForge AI - Storage Services
+# ===========================================
+# Kafka, Milvus, Redis, Elasticsearch, MinIO
+#
+# Usage: docker compose -f docker/compose.base.yml -f docker/compose.storage.yml up -d
+
+services:
+  # -------------------------------------------
+  # Apache Kafka (Message Queue)
+  # -------------------------------------------
+  kafka:
+    image: bitnami/kafka:3.6
+    container_name: dataforge-kafka
+    environment:
+      <<: *common-env
+      KAFKA_CFG_NODE_ID: 1
+      KAFKA_CFG_PROCESS_ROLES: controller,broker
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_CFG_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: "true"
+    ports:
+      - "9092:9092"
+    volumes:
+      - kafka-data:/bitnami/kafka
+    networks:
+      - dataforge-net
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD-SHELL", "kafka-topics.sh --bootstrap-server localhost:9092 --list"]
+    <<: [*restart-policy, *logging]
+
+  # -------------------------------------------
+  # Kafka UI
+  # -------------------------------------------
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: dataforge-kafka-ui
+    environment:
+      <<: *common-env
+      KAFKA_CLUSTERS_0_NAME: dataforge
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+    ports:
+      - "8080:8080"
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - dataforge-net
+    <<: [*restart-policy, *logging]
+
+  # -------------------------------------------
+  # MinIO (S3-compatible Object Storage)
+  # -------------------------------------------
+  minio:
+    image: minio/minio:latest
+    container_name: dataforge-minio
+    command: server /data --console-address ":9001"
+    environment:
+      <<: *common-env
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-data:/data
+    networks:
+      - dataforge-net
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+    <<: [*restart-policy, *logging]
+
+  # -------------------------------------------
+  # Milvus (Vector Database)
+  # -------------------------------------------
+  etcd:
+    image: quay.io/coreos/etcd:v3.5.5
+    container_name: dataforge-etcd
+    environment:
+      <<: *common-env
+      ETCD_AUTO_COMPACTION_MODE: revision
+      ETCD_AUTO_COMPACTION_RETENTION: "1000"
+      ETCD_QUOTA_BACKEND_BYTES: "4294967296"
+      ETCD_SNAPSHOT_COUNT: "50000"
+    command: etcd -advertise-client-urls=http://127.0.0.1:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
+    volumes:
+      - milvus-data:/etcd
+    networks:
+      - dataforge-net
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "etcdctl", "endpoint", "health"]
+    <<: [*restart-policy, *logging]
+
+  milvus:
+    image: milvusdb/milvus:v2.3.4
+    container_name: dataforge-milvus
+    command: ["milvus", "run", "standalone"]
+    environment:
+      <<: *common-env
+      ETCD_ENDPOINTS: etcd:2379
+      MINIO_ADDRESS: minio:9000
+      MINIO_ACCESS_KEY_ID: minioadmin
+      MINIO_SECRET_ACCESS_KEY: minioadmin123
+    ports:
+      - "19530:19530"
+      - "9091:9091"
+    volumes:
+      - milvus-data:/var/lib/milvus
+    depends_on:
+      etcd:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    networks:
+      - dataforge-net
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
+    <<: [*restart-policy, *logging]
+
+  # -------------------------------------------
+  # Redis (Cache)
+  # -------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: dataforge-redis
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - dataforge-net
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "redis-cli", "ping"]
+    <<: [*restart-policy, *logging]
+
+  # -------------------------------------------
+  # Elasticsearch (Full-text Search)
+  # -------------------------------------------
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: dataforge-elasticsearch
+    environment:
+      <<: *common-env
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: "-Xms1g -Xmx1g"
+    ports:
+      - "9200:9200"
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    networks:
+      - dataforge-net
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep -q 'green\\|yellow'"]
+    <<: [*restart-policy, *logging]
+
+networks:
+  dataforge-net:
+    external: true
+    name: dataforge-ai_dataforge-net
+
+volumes:
+  kafka-data:
+    external: true
+    name: dataforge-kafka-data
+  minio-data:
+    external: true
+    name: dataforge-minio-data
+  milvus-data:
+    external: true
+    name: dataforge-milvus-data
+  redis-data:
+    external: true
+    name: dataforge-redis-data
+  es-data:
+    external: true
+    name: dataforge-es-data
