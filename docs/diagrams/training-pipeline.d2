@@ -1,7 +1,7 @@
 # LLM 训练数据处理 Pipeline
-# 展示从原始数据到训练数据集的完整处理流程
+# 展示从原始数据到训练数据集的完整处理流程（正方形布局）
 
-direction: down
+grid-columns: 2
 
 title: {
   label: LLM Training Data Pipeline
@@ -15,313 +15,296 @@ title: {
 }
 
 # ==========================================
-# Stage 1: 原始数据
+# 左上：原始数据 + 清洗
 # ==========================================
-raw: Raw Data {
-  shape: document
-  style: {
-    fill: "#e3f2fd"
-    stroke: "#1565c0"
-    font-size: 16
-  }
-  label: "Raw Data\n(TB/PB scale)"
-}
-
-# ==========================================
-# Stage 2: 数据清洗
-# ==========================================
-cleaning: "Stage 1: Data Cleaning" {
+raw-cleaning: "1. Raw Data & Cleaning" {
   style: {
     fill: "#fff3e0"
     stroke: "#e65100"
     border-radius: 8
   }
-
-  grid-columns: 5
-
-  encoding: Encoding\nNormalization {
-    style.fill: "#ffe0b2"
+  
+  grid-columns: 2
+  grid-gap: 0
+  
+  raw: Raw Data {
+    shape: document
+    style: {
+      fill: "#e3f2fd"
+      stroke: "#1565c0"
+    }
+    label: "TB/PB scale"
   }
-  html: HTML Tag\nRemoval {
+  
+  encoding: "Encoding" {
     style.fill: "#ffe0b2"
+    label: "Normalize"
   }
-  special: Special Char\nFiltering {
-    style.fill: "#ffe0b2"
+  
+  html: "HTML" {
+    style.fill: "#ffcc80"
+    label: "Remove tags"
   }
-  lang: Language\nDetection {
-    style.fill: "#ffe0b2"
+  
+  special: "Special Char" {
+    style.fill: "#ffb74d"
+    label: "Filter"
   }
-  format: Format\nStandardization {
-    style.fill: "#ffe0b2"
+  
+  lang: "Language" {
+    style.fill: "#ffb74d"
+    label: "Detect"
   }
-
-  encoding -> html -> special -> lang -> format
+  
+  format: "Format" {
+    style.fill: "#ffa726"
+    label: "Standardize"
+  }
+  
+  raw -> encoding -> html -> special -> lang -> format
 }
 
 # ==========================================
-# Stage 3: 去重
+# 右上：去重
 # ==========================================
-dedup: "Stage 2: Deduplication" {
+dedup: "2. Deduplication" {
   style: {
     fill: "#e8f5e9"
     stroke: "#2e7d32"
     border-radius: 8
   }
-
-  exact: Exact Match\n(Hash) {
+  
+  grid-columns: 3
+  grid-gap: 0
+  
+  exact: "Hash" {
     shape: hexagon
     style.fill: "#a5d6a7"
+    label: "Exact"
   }
-
-  minhash: MinHash\n(Document) {
+  minhash: "MinHash" {
     shape: hexagon
     style: {
       fill: "#66bb6a"
       font-color: "#fff"
     }
+    label: "Doc-level"
   }
-
-  simhash: SimHash\n(Paragraph) {
+  simhash: "SimHash" {
     shape: hexagon
     style.fill: "#a5d6a7"
+    label: "Para-level"
   }
-
+  
+  note: "Performance" {
+    style.fill: "#c8e6c9"
+    label: "10B docs in 4h | Threshold: 0.8"
+    width: 400
+  }
+  
   exact -> minhash -> simhash
-
-  note: {
-    shape: text
-    style: {
-      font-size: 12
-      italic: true
-    }
-    label: "10B docs in 4 hours, Threshold: 0.8"
-  }
 }
 
 # ==========================================
-# Stage 4: 质量过滤
+# 左中：质量过滤
 # ==========================================
-quality: "Stage 3: Quality Filtering" {
+quality: "3. Quality Filtering" {
   style: {
     fill: "#fce4ec"
     stroke: "#c2185b"
     border-radius: 8
   }
 
-  rule-filters: Rule-based Filters {
-    style: {
-      fill: "#f8bbd9"
-      border-radius: 4
-    }
+  grid-columns: 2
+  grid-gap: 0
 
-    grid-columns: 2
-
-    length: "Length: 50-100K tokens"
-    dup-rate: "Dup Rate: <30%"
-    special-rate: "Special Char: <20%"
-    stopword: "Stopword: >10%"
+  length: "Length" {
+    style.fill: "#f8bbd9"
+    label: "50-100K tok"
   }
-
-  model-filters: Model-based Filters {
-    style: {
-      fill: "#f48fb1"
-      border-radius: 4
-    }
-
-    grid-columns: 3
-
-    ppl: "Perplexity\n(KenLM)\nPPL < 1000" {
-      style.fill: "#ec407a"
-      style.font-color: "#fff"
-    }
-    toxic: "Toxicity\nDetection\n< 0.7" {
-      style.fill: "#ec407a"
-      style.font-color: "#fff"
-    }
-    quality-score: "Quality\nClassifier\n> 0.5" {
-      style.fill: "#ec407a"
-      style.font-color: "#fff"
-    }
+  dup-rate: "Dup Rate" {
+    style.fill: "#f8bbd9"
+    label: "< 30%"
   }
-
-  rule-filters -> model-filters
+  special-rate: "Special" {
+    style.fill: "#f48fb1"
+    label: "< 20%"
+  }
+  stopword: "Stopword" {
+    style.fill: "#f48fb1"
+    label: "> 10%"
+  }
+  
+  ppl: "Perplexity" {
+    style.fill: "#ec407a"
+    style.font-color: "#fff"
+    label: "PPL < 1000"
+  }
+  toxic: "Toxicity" {
+    style.fill: "#ec407a"
+    style.font-color: "#fff"
+    label: "< 0.7"
+  }
+  
+  length -> special-rate -> ppl
+  dup-rate -> stopword -> toxic
 }
 
 # ==========================================
-# Stage 5: PII 处理
+# 右中：PII处理
 # ==========================================
-pii: "Stage 4: PII & Safety" {
+pii: "4. PII & Safety" {
   style: {
     fill: "#ede7f6"
     stroke: "#512da8"
     border-radius: 8
   }
-
-  grid-columns: 3
-
-  detect: PII Detection {
+  
+  grid-columns: 1
+  grid-gap: 0
+  
+  detect: "PII Detection" {
     style.fill: "#d1c4e9"
-    label: "PII Detection\nEmail/Phone\nID Card/Address"
+    label: "Email / Phone / ID Card / Address"
   }
 
-  mask: PII Masking {
+  mask: "PII Masking" {
     style.fill: "#b39ddb"
-    label: "PII Masking\nReplace/Hash\nAnonymize"
+    label: "Replace / Hash / Anonymize"
   }
 
-  filter: Sensitive\nWord Filter {
-    style.fill: "#d1c4e9"
-    label: "Sensitive Filter\nBlacklist/Regex"
+  filter: "Sensitive Filter" {
+    style.fill: "#9575cd"
+    style.font-color: "#fff"
+    label: "Blacklist / Regex patterns"
   }
 
   detect -> mask -> filter
 }
 
 # ==========================================
-# Stage 6: 数据增强
+# 左下：数据增强
 # ==========================================
-augment: "Stage 5: Augmentation & Synthesis" {
+augment: "5. Augmentation" {
   style: {
     fill: "#e0f7fa"
     stroke: "#00838f"
     border-radius: 8
   }
 
-  synthesis: Instruction Synthesis {
+  grid-columns: 2
+  grid-gap: 0
+
+  self-inst: "Self-Instruct" {
     style.fill: "#80deea"
-
-    grid-columns: 2
-
-    self-inst: Self-Instruct {
-      style.fill: "#4dd0e1"
-    }
-    evol-inst: Evol-Instruct {
-      style.fill: "#4dd0e1"
-    }
+    label: "Generate"
   }
-
-  augmentation: Data Augmentation {
-    style.fill: "#80deea"
-
-    grid-columns: 2
-
-    backtrans: Back Translation {
-      style.fill: "#26c6da"
-    }
-    paraphrase: Paraphrase {
-      style.fill: "#26c6da"
-    }
+  evol-inst: "Evol-Instruct" {
+    style.fill: "#4dd0e1"
+    label: "Evolve"
   }
+  
+  backtrans: "Back Translate" {
+    style.fill: "#26c6da"
+    label: "Multi-lang"
+  }
+  paraphrase: "Paraphrase" {
+    style.fill: "#00bcd4"
+    label: "Rephrase"
+  }
+  
+  self-inst -> backtrans
+  evol-inst -> paraphrase
 }
 
 # ==========================================
-# Stage 7: 数据配比
+# 右下：配比 + 输出
 # ==========================================
-mixing: "Stage 6: Data Mixing" {
+mixing-output: "6. Mixing & Output" {
   style: {
     fill: "#fff8e1"
     stroke: "#f9a825"
     border-radius: 8
   }
 
-  domains: Domain Distribution {
+  grid-columns: 5
+  grid-gap: 0
+
+  general: "General" {
+    style.fill: "#ffc107"
+    label: "40%"
+  }
+  code: "Code" {
+    style.fill: "#ffca28"
+    label: "25%"
+  }
+  math: "Math" {
+    style.fill: "#ffd54f"
+    label: "10%"
+  }
+  instruct: "Instruct" {
+    style.fill: "#ffe082"
+    label: "15%"
+  }
+  multi-lang: "Multi" {
     style.fill: "#ffecb3"
-
-    grid-columns: 5
-
-    general: "General\n40%" {
-      style: {
-        fill: "#ffc107"
-        font-color: "#000"
-      }
-    }
-    code: "Code\n25%" {
-      style: {
-        fill: "#ffca28"
-        font-color: "#000"
-      }
-    }
-    math: "Math\n10%" {
-      style: {
-        fill: "#ffd54f"
-        font-color: "#000"
-      }
-    }
-    instruct: "Instruct\n15%" {
-      style: {
-        fill: "#ffe082"
-        font-color: "#000"
-      }
-    }
-    multi-lang: "Multi-lang\n10%" {
-      style: {
-        fill: "#ffecb3"
-        font-color: "#000"
-      }
-    }
+    label: "10%"
   }
 
-  curriculum: Curriculum Learning {
+  curriculum: "Curriculum Learning" {
     style: {
       fill: "#ffb300"
       font-color: "#fff"
       bold: true
     }
-    label: "Curriculum Learning\n(Difficulty Progression)"
+    label: "Difficulty Progression"
+    width: 400
   }
 
-  domains -> curriculum
-}
-
-# ==========================================
-# Stage 8: 输出
-# ==========================================
-output: Training Dataset {
-  shape: cylinder
-  style: {
-    fill: "#c8e6c9"
-    stroke: "#2e7d32"
-    font-size: 16
-    bold: true
+  output: Training Dataset {
+    shape: cylinder
+    style: {
+      fill: "#c8e6c9"
+      stroke: "#2e7d32"
+      bold: true
+    }
+    label: "High-Quality Data"
+    width: 400
   }
-  label: "High-Quality\nTraining Dataset\n(Paimon/Iceberg)"
+
+  general -> curriculum
+  code -> curriculum
+  math -> curriculum
+  instruct -> curriculum
+  multi-lang -> curriculum
+  curriculum -> output
 }
 
 # ==========================================
 # 连接
 # ==========================================
-raw -> cleaning: Ingest {
-  style.stroke: "#1565c0"
-  style.stroke-width: 2
-}
-
-cleaning -> dedup: {
+raw-cleaning -> dedup {
   style.stroke: "#e65100"
   style.stroke-width: 2
 }
 
-dedup -> quality: {
+dedup -> quality {
   style.stroke: "#2e7d32"
   style.stroke-width: 2
 }
 
-quality -> pii: {
+quality -> pii {
   style.stroke: "#c2185b"
   style.stroke-width: 2
 }
 
-pii -> augment: {
+pii -> augment {
   style.stroke: "#512da8"
   style.stroke-width: 2
 }
 
-augment -> mixing: {
+augment -> mixing-output {
   style.stroke: "#00838f"
-  style.stroke-width: 2
-}
-
-mixing -> output: {
-  style.stroke: "#f9a825"
   style.stroke-width: 2
 }
 
@@ -332,9 +315,9 @@ metrics: {
   shape: text
   near: bottom-center
   style: {
-    font-size: 14
+    font-size: 12
     italic: true
     font-color: "#616161"
   }
-  label: "Performance: Daily 50TB+ | Dedup 10B docs in 4h | Filter rate ~30%"
+  label: "Daily 50TB+ | Dedup 10B docs in 4h | Filter rate ~30%"
 }

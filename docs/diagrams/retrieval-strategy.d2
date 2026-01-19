@@ -1,7 +1,7 @@
 # 混合检索策略流程
-# 展示向量检索 + 关键词检索 + Rerank 的完整流程
+# 展示向量检索 + 关键词检索 + Rerank 的完整流程（正方形布局）
 
-direction: right
+grid-columns: 2
 
 title: {
   label: Hybrid Retrieval Strategy
@@ -15,298 +15,265 @@ title: {
 }
 
 # ==========================================
-# 用户查询
+# 左上：用户 + 查询
 # ==========================================
-user: User {
-  shape: person
-  style: {
-    fill: "#ffecb3"
-    stroke: "#ff8f00"
-  }
-}
-
-query: "Query" {
-  shape: parallelogram
+user-query: "1. User Query" {
   style: {
     fill: "#fff8e1"
     stroke: "#f9a825"
+    border-radius: 8
   }
-  label: "Query\nHow to configure Flink CDC?"
+
+  grid-columns: 1
+  grid-gap: 0
+
+  user: User {
+    shape: person
+    style: {
+      fill: "#ffecb3"
+      stroke: "#ff8f00"
+    }
+  }
+
+  query: "Query" {
+    shape: parallelogram
+    style: {
+      fill: "#ffe082"
+      stroke: "#ffa000"
+    }
+    label: "How to configure Flink CDC?"
+  }
+  
+  user -> query
 }
 
 # ==========================================
-# Query 处理
+# 右上：查询处理
 # ==========================================
-query-process: Query Processing {
+query-process: "2. Query Processing" {
   style: {
     fill: "#e3f2fd"
     stroke: "#1565c0"
     border-radius: 8
   }
-
-  direction: down
-
-  intent: "Intent Recognition" {
+  
+  grid-columns: 2
+  grid-gap: 0
+  
+  intent: "Intent" {
     style.fill: "#90caf9"
-    label: "Intent: Tech QA"
+    label: "Tech QA"
   }
-
-  entity: "Entity Extraction" {
+  
+  entity: "Entity" {
     style.fill: "#64b5f6"
-    label: "Entities:\nFlink, CDC, Config"
+    label: "Flink, CDC"
   }
-
-  hyde: "HyDE Rewrite" {
+  
+  hyde: "HyDE" {
     style: {
       fill: "#1976d2"
       font-color: "#fff"
       bold: true
     }
-    label: "HyDE\nGenerate hypothetical doc"
+    label: "Hypothetical\nDoc"
   }
-
-  expand: "Query Expansion" {
+  
+  expand: "Expand" {
     style.fill: "#64b5f6"
-    label: "Expand:\n+ Debezium, MySQL"
+    label: "+ Debezium"
   }
-
+  
   intent -> entity -> hyde -> expand
 }
 
 # ==========================================
-# 并行检索
+# 左中：向量检索
 # ==========================================
-retrieval: Parallel Retrieval {
+vector-search: "3. Vector Search" {
   style: {
     fill: "#fce4ec"
-    stroke: "#c2185b"
+    stroke: "#e91e63"
     border-radius: 8
   }
 
-  vector-search: "Vector Search" {
+  grid-columns: 1
+  grid-gap: 0
+
+  milvus: Milvus {
+    shape: cylinder
     style: {
-      fill: "#e91e63"
+      fill: "#00acc1"
       font-color: "#fff"
-      border-radius: 8
     }
-
-    milvus: Milvus {
-      shape: cylinder
-      style: {
-        fill: "#00acc1"
-        font-color: "#fff"
-      }
-    }
-
-    hnsw: "HNSW Index" {
-      style.fill: "#f48fb1"
-      label: "HNSW\nef=128"
-    }
-
-    v-result: "Results" {
-      style.fill: "#f8bbd9"
-      label: "Top-50\n[0.92, 0.89, 0.85...]"
-    }
-
-    milvus -> hnsw -> v-result
   }
 
-  keyword-search: "Keyword Search" {
-    style: {
-      fill: "#f06292"
-      font-color: "#fff"
-      border-radius: 8
-    }
-
-    es: Elasticsearch {
-      shape: cylinder
-      style: {
-        fill: "#fdd835"
-        font-color: "#000"
-      }
-    }
-
-    bm25: "BM25" {
-      style.fill: "#f8bbd9"
-      label: "BM25\nTF-IDF"
-    }
-
-    k-result: "Results" {
-      style.fill: "#f8bbd9"
-      label: "Top-50\n[12.5, 11.2, 10.8...]"
-    }
-
-    es -> bm25 -> k-result
+  hnsw: "HNSW Index" {
+    style.fill: "#f48fb1"
+    label: "ef = 128"
   }
+
+  v-result: "Vector Results" {
+    style.fill: "#f8bbd9"
+    label: "Top-50: [0.92, 0.89, 0.85...]"
+  }
+
+  milvus -> hnsw -> v-result
 }
 
 # ==========================================
-# 融合排序
+# 右中：关键词检索
 # ==========================================
-fusion: "RRF Fusion" {
+keyword-search: "4. Keyword Search" {
+  style: {
+    fill: "#fce4ec"
+    stroke: "#f06292"
+    border-radius: 8
+  }
+
+  grid-columns: 1
+  grid-gap: 0
+
+  es: Elasticsearch {
+    shape: cylinder
+    style: {
+      fill: "#fdd835"
+      font-color: "#000"
+    }
+  }
+
+  bm25: "BM25 Algorithm" {
+    style.fill: "#f8bbd9"
+    label: "TF-IDF based"
+  }
+
+  k-result: "Keyword Results" {
+    style.fill: "#f8bbd9"
+    label: "Top-50: [12.5, 11.2, 10.8...]"
+  }
+
+  es -> bm25 -> k-result
+}
+
+# ==========================================
+# 左下：融合 + Rerank
+# ==========================================
+fusion-rerank: "5. Fusion & Reranking" {
   style: {
     fill: "#ede7f6"
     stroke: "#512da8"
     border-radius: 8
   }
 
-  rrf: "Reciprocal Rank Fusion" {
+  grid-columns: 2
+  grid-gap: 0
+
+  rrf: "RRF Fusion" {
     style: {
       fill: "#7c4dff"
       font-color: "#fff"
       bold: true
     }
-    label: "RRF Score =\nSum 1/(k + rank)"
+    label: "Σ 1/(k+rank)"
   }
 
-  formula: {
-    shape: text
-    style: {
-      font-size: 11
-      font-color: "#512da8"
-    }
-    label: "k=60, Combine vector & keyword ranks"
-  }
-
-  merged: "Merged List" {
+  merged: "Merged" {
     style.fill: "#d1c4e9"
-    label: "Top-100\nMerged results"
+    label: "Top-100"
   }
 
-  rrf -> merged
-}
-
-# ==========================================
-# Reranker
-# ==========================================
-reranker: "Reranker" {
-  style: {
-    fill: "#e8f5e9"
-    stroke: "#2e7d32"
-    border-radius: 8
-  }
-
-  model: "BGE-Reranker" {
+  reranker: "BGE-Reranker" {
     style: {
       fill: "#43a047"
       font-color: "#fff"
       bold: true
     }
-    label: "BGE-Reranker-large\nCross-Encoder"
+    label: "Cross-Encoder"
   }
 
-  score: "Relevance Scoring" {
-    style.fill: "#a5d6a7"
-    label: "Query-Doc pairs\n-> relevance score"
-  }
-
-  final: "Final Top-10" {
+  final: "Final" {
     style: {
       fill: "#2e7d32"
       font-color: "#fff"
       bold: true
     }
-    label: "Top-10\nHighest relevance"
+    label: "Top-10"
   }
 
-  model -> score -> final
+  rrf -> merged -> reranker -> final
 }
 
 # ==========================================
-# LLM 生成
+# 右下：LLM生成 + 性能
 # ==========================================
-llm: "LLM" {
+llm-perf: "6. LLM & Performance" {
   style: {
     fill: "#fff3e0"
     stroke: "#e65100"
     border-radius: 8
   }
 
-  context: "Context" {
-    style.fill: "#ffe0b2"
-    label: "Top-10 docs\nas context"
-  }
+  grid-columns: 1
+  grid-gap: 0
 
-  generate: "Generate" {
+  generate: "LLM Generate" {
     style: {
       fill: "#ff9800"
       font-color: "#fff"
       bold: true
     }
-    label: "GPT-4 / Claude\nGenerate answer"
+    label: "GPT-4 / Claude"
   }
 
   answer: "Answer" {
     style.fill: "#ffcc80"
-    label: "Answer with\ncitations [1][2]"
+    label: "Response with citations [1][2]"
   }
 
-  context -> generate -> answer
+  perf: "Performance Comparison" {
+    style.fill: "#ffecb3"
+    label: "Vector: 85%/20ms | Keyword: 75%/15ms\nHybrid: 92%/35ms | +Rerank: 95%/80ms"
+  }
+
+  generate -> answer
 }
 
 # ==========================================
 # 连接
 # ==========================================
-user -> query: {
-  style.stroke: "#ff8f00"
-}
-
-query -> query-process: {
-  style.stroke: "#1565c0"
+user-query -> query-process {
+  style.stroke: "#f9a825"
   style.stroke-width: 2
 }
 
-query-process -> retrieval.vector-search: Vector query {
+query-process -> vector-search: Vector {
   style.stroke: "#c2185b"
   style.stroke-width: 2
 }
 
-query-process -> retrieval.keyword-search: Keywords {
+query-process -> keyword-search: Keywords {
   style.stroke: "#c2185b"
   style.stroke-width: 2
 }
 
-retrieval.vector-search.v-result -> fusion: {
+vector-search -> fusion-rerank {
   style.stroke: "#512da8"
   style.stroke-width: 2
 }
 
-retrieval.keyword-search.k-result -> fusion: {
+keyword-search -> fusion-rerank {
   style.stroke: "#512da8"
   style.stroke-width: 2
 }
 
-fusion -> reranker: {
+fusion-rerank -> llm-perf {
   style.stroke: "#2e7d32"
   style.stroke-width: 2
 }
 
-reranker -> llm: {
-  style.stroke: "#e65100"
-  style.stroke-width: 2
-}
-
-llm.answer -> user: Response {
+llm-perf.answer -> user-query.user: Response {
   style: {
     stroke: "#e65100"
     stroke-width: 2
-  }
-}
-
-# ==========================================
-# 性能对比
-# ==========================================
-comparison: "Strategy Comparison" {
-  near: bottom-center
-  style: {
-    fill: "#eceff1"
-    stroke: "#607d8b"
-    border-radius: 8
-  }
-
-  table: {
-    shape: text
-    style.font-size: 11
-    label: "Vector: 85% recall, 20ms | Keyword: 75% recall, 15ms | Hybrid: 92% recall, 35ms | Hybrid+Rerank: 95% recall, 80ms"
   }
 }

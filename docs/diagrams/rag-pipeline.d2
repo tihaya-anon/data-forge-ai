@@ -1,7 +1,7 @@
 # RAG 智能知识库处理流程
-# 展示从数据接入到智能问答的完整链路
+# 展示从数据接入到智能问答的完整链路（正方形布局）
 
-direction: down
+grid-columns: 2
 
 title: {
   label: RAG Knowledge Base Pipeline
@@ -15,17 +15,18 @@ title: {
 }
 
 # ==========================================
-# 数据接入层
+# 左上：数据源 + Kafka
 # ==========================================
-sources: Data Sources {
+data-ingestion: "1. Data Ingestion" {
   style: {
     fill: "#e3f2fd"
     stroke: "#1565c0"
     border-radius: 8
   }
-
-  grid-columns: 4
-
+  
+  grid-columns: 2
+  grid-gap: 0
+  
   confluence: Confluence {
     shape: document
     style.fill: "#90caf9"
@@ -42,133 +43,97 @@ sources: Data Sources {
     shape: document
     style.fill: "#90caf9"
   }
-}
-
-kafka: Apache Kafka {
-  shape: queue
-  style: {
-    fill: "#ffca28"
-    stroke: "#f57f17"
-    bold: true
+  
+  kafka: Kafka {
+    shape: queue
+    style: {
+      fill: "#ffca28"
+      stroke: "#f57f17"
+      bold: true
+    }
+    width: 300
   }
+  
+  confluence -> kafka
+  git -> kafka
+  mysql -> kafka
+  files -> kafka
 }
 
 # ==========================================
-# 双路处理
+# 右上：双路处理
 # ==========================================
-processing: Processing Layer {
+processing: "2. Processing Layer" {
   style: {
     fill: "#f3e5f5"
     stroke: "#7b1fa2"
     border-radius: 8
   }
-
+  
+  grid-columns: 2
+  grid-gap: 0
+  
   realtime: "Flink Real-time" {
-    style: {
-      fill: "#ce93d8"
-      border-radius: 8
-    }
-
-    desc: {
-      shape: text
-      style.font-size: 12
-      label: "Incremental processing\nCDC sync, Latency < 5s"
-    }
+    style.fill: "#ce93d8"
+    label: "Incremental\nLatency < 5s"
   }
-
+  
   batch: "Spark Batch" {
-    style: {
-      fill: "#ba68c8"
-      border-radius: 8
-    }
-
-    desc: {
-      shape: text
-      style.font-size: 12
-      label: "Full data processing\nDaily rebuild"
-    }
+    style.fill: "#ba68c8"
+    label: "Full rebuild\nDaily"
   }
-}
-
-# ==========================================
-# 文档处理
-# ==========================================
-doc-process: Document Processing {
-  style: {
-    fill: "#fff3e0"
-    stroke: "#e65100"
-    border-radius: 8
-  }
-
+  
   parse: "Parse" {
-    style.fill: "#ffe0b2"
-    label: "Parse\nPDF/Word/HTML"
+    style.fill: "#e1bee7"
+    label: "PDF/HTML"
   }
-
   clean: "Clean" {
-    style.fill: "#ffcc80"
-    label: "Clean\nDe-noise/Format"
+    style.fill: "#e1bee7"
+    label: "De-noise"
   }
-
   chunk: "Chunk" {
-    style: {
-      fill: "#ffb74d"
-      font-color: "#fff"
-    }
-    label: "Chunk\nSemantic/512 tokens"
+    style.fill: "#ce93d8"
+    label: "512 tokens"
   }
-
   meta: "Metadata" {
-    style.fill: "#ffe0b2"
-    label: "Metadata\nTitle/Source/Time"
+    style.fill: "#e1bee7"
+    label: "Extract"
   }
-
+  
+  realtime -> parse
+  batch -> parse
   parse -> clean -> chunk -> meta
 }
 
 # ==========================================
-# 向量化
+# 左中：向量化 + 存储
 # ==========================================
-embedding: Embedding Service {
+embedding-storage: "3. Embedding & Storage" {
   style: {
     fill: "#e8f5e9"
     stroke: "#2e7d32"
     border-radius: 8
   }
-
-  models: Embedding Models {
+  
+  grid-columns: 3
+  grid-gap: 0
+  
+  bge: "BGE-large-zh" {
+    style: {
+      fill: "#66bb6a"
+      font-color: "#fff"
+    }
+    label: "Chinese"
+  }
+  openai: "text-embed-3" {
+    style.fill: "#81c784"
+    label: "Multilingual"
+  }
+  config: "Config" {
     style.fill: "#a5d6a7"
-
-    grid-columns: 2
-
-    bge: "BGE-large-zh\n(Chinese)" {
-      style: {
-        fill: "#66bb6a"
-        font-color: "#fff"
-      }
-    }
-    openai: "text-embedding-3\n(Multilingual)" {
-      style.fill: "#81c784"
-    }
+    label: "Dim: 1024"
   }
-
-  config: {
-    shape: text
-    style.font-size: 12
-    label: "Dimension: 1024, Batch: 512"
-  }
-}
-
-# ==========================================
-# 存储层
-# ==========================================
-storage: Vector Storage {
-  style: {
-    fill: "#e0f7fa"
-    stroke: "#00838f"
-    border-radius: 8
-  }
-
+  
   milvus: Milvus {
     shape: cylinder
     style: {
@@ -176,217 +141,172 @@ storage: Vector Storage {
       font-color: "#fff"
       bold: true
     }
-    label: "Milvus\nHNSW Index\n100M+ vectors"
+    label: "HNSW\n100M+ vec"
   }
-
   paimon: Paimon {
     shape: cylinder
     style: {
       fill: "#26a69a"
       font-color: "#fff"
     }
-    label: "Paimon\nMetadata\nVersion control"
+    label: "Metadata"
   }
-
-  es: Elasticsearch {
+  es: ES {
     shape: cylinder
     style: {
       fill: "#fdd835"
       font-color: "#000"
     }
-    label: "ES\nBM25 Index"
+    label: "BM25"
   }
+  
+  bge -> milvus
+  openai -> milvus
 }
 
 # ==========================================
-# 检索服务
+# 右中：检索服务
 # ==========================================
-retrieval: "Retrieval Service" {
+retrieval: "4. Retrieval Service" {
   style: {
     fill: "#fce4ec"
     stroke: "#c2185b"
     border-radius: 8
   }
-
-  query-process: Query Processing {
+  
+  grid-columns: 2
+  grid-gap: 0
+  
+  intent: "Intent" {
     style.fill: "#f8bbd9"
-
-    intent: "Intent Recognition" {
-      style.fill: "#f48fb1"
-    }
-    rewrite: "Query Rewrite (HyDE)" {
-      style: {
-        fill: "#ec407a"
-        font-color: "#fff"
-      }
-    }
-    expand: "Query Expansion" {
-      style.fill: "#f48fb1"
-    }
-
-    intent -> rewrite -> expand
+    label: "Recognition"
   }
-
-  hybrid: Hybrid Search {
-    style: {
-      fill: "#e91e63"
-      font-color: "#fff"
-      border-radius: 4
-    }
-
-    vector: "Vector Search\n(Milvus) Top-50" {
-      style.fill: "#f06292"
-    }
-
-    keyword: "Keyword Search\n(BM25) Top-50" {
-      style.fill: "#f06292"
-    }
-
-    rrf: "RRF Fusion" {
-      style: {
-        fill: "#ad1457"
-        font-color: "#fff"
-        bold: true
-      }
-    }
-
-    vector -> rrf
-    keyword -> rrf
+  hyde: "HyDE" {
+    style.fill: "#ec407a"
+    style.font-color: "#fff"
+    label: "Rewrite"
   }
-
+  
+  vec: "Vector" {
+    style.fill: "#f48fb1"
+    label: "Top-50"
+  }
+  kw: "BM25" {
+    style.fill: "#f48fb1"
+    label: "Top-50"
+  }
+  
+  rrf: "RRF Fusion" {
+    style.fill: "#e91e63"
+    style.font-color: "#fff"
+    label: "Merge"
+  }
   rerank: "Reranker" {
     style: {
       fill: "#880e4f"
       font-color: "#fff"
       bold: true
     }
-    label: "BGE-Reranker\nCross-Encoder\nTop-10"
+    label: "Top-10"
   }
-
-  query-process -> hybrid
-  hybrid -> rerank
+  
+  intent -> hyde
+  vec -> rrf
+  kw -> rrf
+  rrf -> rerank
 }
 
 # ==========================================
-# LLM 生成
+# 左下：LLM 生成
 # ==========================================
-generation: "LLM Generation" {
+generation: "5. LLM Generation" {
   style: {
     fill: "#ede7f6"
     stroke: "#512da8"
     border-radius: 8
   }
-
-  context: Context Assembly {
+  
+  grid-columns: 1
+  grid-gap: 0
+  
+  context: "Context Assembly" {
     style.fill: "#d1c4e9"
-    label: "Context Assembly\n[doc1, doc2, ..., doc10]"
+    label: "Top-10 docs as context"
   }
-
-  llm: LLM {
+  
+  llm: "LLM" {
     style: {
       fill: "#7c4dff"
       font-color: "#fff"
       bold: true
     }
-    label: "LLM\nGPT-4 / Claude"
+    label: "GPT-4 / Claude"
   }
-
-  response: Response {
+  
+  response: "Response" {
     style.fill: "#b39ddb"
-    label: "Response\nAnswer + Citations"
+    label: "Answer + Citations [1][2]"
   }
-
+  
   context -> llm -> response
 }
 
 # ==========================================
-# 用户
+# 右下：用户 + 指标
 # ==========================================
-user: User {
-  shape: person
+user-metrics: "6. User & Metrics" {
   style: {
-    fill: "#ffecb3"
-    stroke: "#ff8f00"
+    fill: "#fff8e1"
+    stroke: "#f9a825"
+    border-radius: 8
+  }
+  
+  grid-columns: 1
+  grid-gap: 0
+  
+  user: User {
+    shape: person
+    style: {
+      fill: "#ffecb3"
+      stroke: "#ff8f00"
+    }
+  }
+  
+  metrics: "Performance Metrics" {
+    style.fill: "#fff59d"
+    label: "Sync < 5s | Vector P99 < 50ms\nE2E < 500ms | Accuracy 90%+"
   }
 }
 
 # ==========================================
 # 连接
 # ==========================================
-sources -> kafka: {
+data-ingestion -> processing {
   style.stroke: "#1565c0"
+  style.stroke-width: 2
 }
 
-kafka -> processing.realtime: Real-time {
-  style: {
-    stroke: "#7b1fa2"
-    stroke-width: 2
-  }
-}
-kafka -> processing.batch: Batch {
-  style: {
-    stroke: "#7b1fa2"
-    stroke-width: 2
-    stroke-dash: 3
-  }
+processing -> embedding-storage {
+  style.stroke: "#7b1fa2"
+  style.stroke-width: 2
 }
 
-processing -> doc-process: {
-  style.stroke: "#e65100"
-}
-
-doc-process -> embedding: {
+embedding-storage -> retrieval {
   style.stroke: "#2e7d32"
+  style.stroke-width: 2
 }
 
-embedding -> storage.milvus: Vectors {
-  style.stroke: "#00838f"
-}
-embedding -> storage.paimon: Metadata {
-  style.stroke: "#00838f"
-}
-doc-process -> storage.es: Text {
-  style.stroke: "#00838f"
-}
-
-user -> retrieval: Query {
-  style: {
-    stroke: "#ff8f00"
-    stroke-width: 2
-  }
-}
-
-storage.milvus -> retrieval.hybrid.vector: {
+retrieval -> generation {
   style.stroke: "#c2185b"
-}
-storage.es -> retrieval.hybrid.keyword: {
-  style.stroke: "#c2185b"
+  style.stroke-width: 2
 }
 
-retrieval -> generation: {
-  style: {
-    stroke: "#512da8"
-    stroke-width: 2
-  }
+user-metrics.user -> retrieval: Query {
+  style.stroke: "#ff8f00"
+  style.stroke-width: 2
 }
 
-generation.response -> user: Answer {
-  style: {
-    stroke: "#512da8"
-    stroke-width: 2
-  }
-}
-
-# ==========================================
-# 性能指标
-# ==========================================
-metrics: {
-  shape: text
-  near: bottom-center
-  style: {
-    font-size: 14
-    italic: true
-    font-color: "#616161"
-  }
-  label: "Performance: Sync < 5s | Vector P99 < 50ms | E2E < 500ms | Accuracy 90%+"
+generation -> user-metrics.user: Answer {
+  style.stroke: "#512da8"
+  style.stroke-width: 2
 }
