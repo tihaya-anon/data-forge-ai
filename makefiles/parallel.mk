@@ -7,6 +7,34 @@ PROJECT_NAME := data-forge-ai
 # 默认并行 agent 数量
 AGENTS ?= 3
 
+# 任务文件路径
+TASKS_FILE := .ai-context/tasks/tasks.yaml
+DAG_SCRIPT := .ai-context/scripts/task_dag.py
+DAG_OUTPUT := docs/diagrams/task-dag.d2
+
+# ============================================================================
+# 任务 DAG 分析
+# ============================================================================
+
+.PHONY: task-dag
+task-dag: ## 生成任务依赖 DAG 图
+	@printf "$(CYAN)生成任务 DAG...$(NC)\n"
+	@python3 $(DAG_SCRIPT) --tasks $(TASKS_FILE) --output $(DAG_OUTPUT)
+	@if command -v d2 >/dev/null 2>&1; then \
+		d2 $(DAG_OUTPUT) docs/images/task-dag.svg && \
+		printf "$(GREEN)✓ SVG 已生成: docs/images/task-dag.svg$(NC)\n"; \
+	else \
+		printf "$(YELLOW)提示: 安装 d2 可生成 SVG 图片 (brew install d2)$(NC)\n"; \
+	fi
+
+.PHONY: task-analyze
+task-analyze: ## 分析任务并行度和关键路径
+	@python3 $(DAG_SCRIPT) --tasks $(TASKS_FILE) --analyze-only
+
+.PHONY: task-edit
+task-edit: ## 编辑任务清单文件
+	@$${EDITOR:-vim} $(TASKS_FILE)
+
 # ============================================================================
 # 工作区管理
 # ============================================================================
@@ -116,65 +144,6 @@ endif
 	@WORKTREE_PATH="../$(PROJECT_NAME)-$(NAME)"; \
 	git worktree remove "$$WORKTREE_PATH" --force && \
 	printf "$(GREEN)✓ 已删除: $$WORKTREE_PATH$(NC)\n"
-
-# ============================================================================
-# 任务管理
-# ============================================================================
-
-.PHONY: task-new
-task-new: ## 创建新任务文件 (NAME=xxx)
-ifndef NAME
-	@printf "$(RED)错误：需要 NAME 参数$(NC)\n"
-	@printf "用法: make task-new NAME=implement-kafka-producer\n"
-	@exit 1
-endif
-	@TASK_FILE=".ai-context/tasks/$(NAME).yaml"; \
-	if [ -f "$$TASK_FILE" ]; then \
-		printf "$(RED)错误：任务文件已存在: $$TASK_FILE$(NC)\n"; \
-		exit 1; \
-	fi; \
-	cp .ai-context/tasks/_template.yaml "$$TASK_FILE"; \
-	printf "$(GREEN)✓ 已创建: $$TASK_FILE$(NC)\n"; \
-	printf "$(CYAN)请编辑该文件定义你的任务。$(NC)\n"
-
-.PHONY: task-list
-task-list: ## 列出所有任务文件
-	@printf "$(CYAN)=== 任务文件列表 ===$(NC)\n"
-	@for f in .ai-context/tasks/*.yaml; do \
-		if [ "$$(basename $$f)" != "_template.yaml" ] && [ "$$(basename $$f)" != "_example.yaml" ]; then \
-			NAME=$$(grep -m1 "名称:" "$$f" 2>/dev/null | cut -d'"' -f2); \
-			STATUS=$$(grep -m1 "状态:" "$$f" 2>/dev/null | cut -d'"' -f2); \
-			AGENT=$$(grep -m1 "agent:" "$$f" 2>/dev/null | head -1 | cut -d'"' -f2); \
-			case $$STATUS in \
-				待处理) COLOR="$(YELLOW)" ;; \
-				进行中) COLOR="$(CYAN)" ;; \
-				已完成) COLOR="$(GREEN)" ;; \
-				已阻塞) COLOR="$(RED)" ;; \
-				*) COLOR="$(NC)" ;; \
-			esac; \
-			printf "%-40s $$COLOR%-12s$(NC) agent: %s\n" "$$f" "$$STATUS" "$$AGENT"; \
-		fi; \
-	done 2>/dev/null || printf "$(YELLOW)暂无任务$(NC)\n"
-
-.PHONY: task-status
-task-status: ## 显示任务状态概览
-	@printf "$(CYAN)=== 任务状态概览 ===$(NC)\n"
-	@PENDING=0; IN_PROGRESS=0; COMPLETED=0; BLOCKED=0; \
-	for f in .ai-context/tasks/*.yaml; do \
-		if [ "$$(basename $$f)" != "_template.yaml" ] && [ "$$(basename $$f)" != "_example.yaml" ]; then \
-			STATUS=$$(grep -m1 "状态:" "$$f" 2>/dev/null | cut -d'"' -f2); \
-			case $$STATUS in \
-				待处理) PENDING=$$((PENDING+1)) ;; \
-				进行中) IN_PROGRESS=$$((IN_PROGRESS+1)) ;; \
-				已完成) COMPLETED=$$((COMPLETED+1)) ;; \
-				已阻塞) BLOCKED=$$((BLOCKED+1)) ;; \
-			esac; \
-		fi; \
-	done 2>/dev/null; \
-	printf "$(YELLOW)待处理:   %d$(NC)\n" $$PENDING; \
-	printf "$(CYAN)进行中:   %d$(NC)\n" $$IN_PROGRESS; \
-	printf "$(GREEN)已完成:   %d$(NC)\n" $$COMPLETED; \
-	printf "$(RED)已阻塞:   %d$(NC)\n" $$BLOCKED
 
 # ============================================================================
 # 合并操作
