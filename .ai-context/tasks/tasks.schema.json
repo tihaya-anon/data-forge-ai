@@ -1,0 +1,91 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "任务清单",
+  "description": "并行 AI Agent 开发的任务定义文件",
+  "type": "object",
+  "required": ["任务"],
+  "properties": {
+    "项目": {
+      "type": "object",
+      "description": "项目元信息",
+      "properties": {
+        "名称": { "type": "string" },
+        "描述": { "type": "string" },
+        "预估总工时": { "type": ["number", "null"] }
+      }
+    },
+    "任务": {
+      "type": "array",
+      "description": "任务列表",
+      "items": {
+        "type": "object",
+        "required": ["编号", "名称", "工时", "依赖"],
+        "properties": {
+          "编号": {
+            "type": "string",
+            "description": "唯一标识符，格式如 T-001",
+            "pattern": "^T-\\d{3}$"
+          },
+          "名称": {
+            "type": "string",
+            "description": "任务简短描述"
+          },
+          "工时": {
+            "type": "number",
+            "description": "预估小时数",
+            "minimum": 0
+          },
+          "依赖": {
+            "type": "array",
+            "description": "前置任务编号列表",
+            "items": {
+              "type": "string",
+              "pattern": "^T-\\d{3}$"
+            }
+          },
+          "状态": {
+            "type": "string",
+            "description": "任务当前状态",
+            "enum": ["待处理", "进行中", "已完成", "已阻塞"],
+            "default": "待处理"
+          },
+          "分配": {
+            "type": "string",
+            "description": "分配的 agent 编号，如 agent1"
+          },
+          "范围": {
+            "type": "array",
+            "description": "允许修改的文件路径",
+            "items": { "type": "string" }
+          },
+          "描述": {
+            "type": "string",
+            "description": "任务详细说明"
+          }
+        }
+      }
+    },
+    "DAG配置": {
+      "type": "object",
+      "description": "DAG 可视化配置",
+      "properties": {
+        "输出目录": { "type": "string" },
+        "输出文件": { "type": "string" },
+        "主题": { "type": "number" },
+        "布局": { 
+          "type": "string",
+          "enum": ["dagre", "elk", "tala"]
+        },
+        "状态颜色": {
+          "type": "object",
+          "properties": {
+            "待处理": { "type": "string" },
+            "进行中": { "type": "string" },
+            "已完成": { "type": "string" },
+            "已阻塞": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}
