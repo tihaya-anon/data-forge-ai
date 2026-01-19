@@ -2,59 +2,58 @@
 # DataForge AI - Analytics Services
 # ===========================================
 # Apache Doris (OLAP)
-#
-# Usage: docker compose -f docker/compose.base.yml -f docker/compose.analytics.yml up -d
 
 services:
   # -------------------------------------------
-  # Apache Doris FE (Frontend)
+  # Doris Frontend
   # -------------------------------------------
   doris-fe:
     image: apache/doris:2.0.3-fe-x86_64
     container_name: dataforge-doris-fe
+    ports:
+      - "8030:8030"
+      - "9030:9030"
     environment:
-      <<: *common-env
+      TZ: Asia/Shanghai
       FE_SERVERS: fe1:doris-fe:9010
       FE_ID: 1
-    ports:
-      - "8030:8030"   # HTTP
-      - "9030:9030"   # MySQL Protocol
     volumes:
       - doris-fe-data:/opt/apache-doris/fe/doris-meta
     networks:
-      - dataforge-net
+      - dataforge
     healthcheck:
-      <<: *healthcheck-defaults
       test: ["CMD", "curl", "-f", "http://localhost:8030/api/bootstrap"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
       start_period: 60s
-    <<: [*restart-policy, *logging]
+    restart: unless-stopped
 
   # -------------------------------------------
-  # Apache Doris BE (Backend)
+  # Doris Backend
   # -------------------------------------------
   doris-be:
     image: apache/doris:2.0.3-be-x86_64
     container_name: dataforge-doris-be
     environment:
-      <<: *common-env
+      TZ: Asia/Shanghai
       FE_SERVERS: fe1:doris-fe:9010
       BE_ADDR: doris-be:9050
     volumes:
       - doris-be-data:/opt/apache-doris/be/storage
+    networks:
+      - dataforge
     depends_on:
       doris-fe:
         condition: service_healthy
-    networks:
-      - dataforge-net
-    <<: [*restart-policy, *logging]
+    restart: unless-stopped
 
 networks:
-  dataforge-net:
+  dataforge:
     external: true
-    name: dataforge-ai_dataforge-net
 
 volumes:
   doris-fe-data:
-    name: dataforge-doris-fe-data
+    external: true
   doris-be-data:
-    name: dataforge-doris-be-data
+    external: true

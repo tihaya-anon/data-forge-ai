@@ -1,8 +1,6 @@
 # ===========================================
 # DataForge AI - Docker Compose Operations
 # ===========================================
-# Docker related targets
-#
 # Included by main Makefile
 
 # -------------------------------------------
@@ -10,15 +8,12 @@
 # -------------------------------------------
 DOCKER_DIR := docker
 COMPOSE_BASE := $(DOCKER_DIR)/compose.base.yml
-
-# Service profiles
 COMPOSE_STORAGE := $(DOCKER_DIR)/compose.storage.yml
 COMPOSE_COMPUTE := $(DOCKER_DIR)/compose.compute.yml
 COMPOSE_ORCHESTRATION := $(DOCKER_DIR)/compose.orchestration.yml
 COMPOSE_ANALYTICS := $(DOCKER_DIR)/compose.analytics.yml
 COMPOSE_MONITORING := $(DOCKER_DIR)/compose.monitoring.yml
 
-# Compose command shortcuts
 DC_BASE := docker compose -f $(COMPOSE_BASE)
 DC_ALL := $(DC_BASE) \
 	-f $(COMPOSE_STORAGE) \
@@ -58,7 +53,7 @@ endif
 
 docker-clean: docker-down ## Stop services and remove volumes
 	@printf "$(RED)Removing all volumes...$(NC)\n"
-	@docker volume rm -f $$(docker volume ls -q -f name=dataforge) 2>/dev/null || true
+	@docker volume rm -f $$(docker volume ls -q -f name=distribute_ai) 2>/dev/null || true
 	@printf "$(GREEN)✓ Cleaned$(NC)\n"
 
 # -------------------------------------------
@@ -76,12 +71,12 @@ docker-compute: docker-network ## Start compute services only (Spark, Flink)
 	@$(DC_BASE) -f $(COMPOSE_COMPUTE) up -d
 	@printf "$(GREEN)✓ Compute services started$(NC)\n"
 
-docker-orchestration: docker-network ## Start orchestration services only (Airflow)
+docker-orchestration: docker-network docker-volumes ## Start orchestration services only (Airflow)
 	@printf "$(CYAN)Starting orchestration services...$(NC)\n"
 	@$(DC_BASE) -f $(COMPOSE_ORCHESTRATION) up -d
 	@printf "$(GREEN)✓ Orchestration services started$(NC)\n"
 
-docker-analytics: docker-network ## Start analytics services only (Doris)
+docker-analytics: docker-network docker-volumes ## Start analytics services only (Doris)
 	@printf "$(CYAN)Starting analytics services...$(NC)\n"
 	@$(DC_BASE) -f $(COMPOSE_ANALYTICS) up -d
 	@printf "$(GREEN)✓ Analytics services started$(NC)\n"
@@ -117,19 +112,23 @@ docker-monitoring-down: ## Stop monitoring services
 .PHONY: docker-network docker-volumes
 
 docker-network: ## Create Docker network
-	@docker network inspect dataforge-ai_dataforge-net >/dev/null 2>&1 || \
+	@docker network inspect dataforge >/dev/null 2>&1 || \
 		(printf "$(CYAN)Creating Docker network...$(NC)\n" && \
-		 docker network create --driver bridge --subnet 172.28.0.0/16 dataforge-ai_dataforge-net)
+		 docker network create dataforge)
 
 docker-volumes: ## Create Docker volumes
 	@printf "$(CYAN)Ensuring Docker volumes exist...$(NC)\n"
-	@docker volume create dataforge-kafka-data 2>/dev/null || true
-	@docker volume create dataforge-minio-data 2>/dev/null || true
-	@docker volume create dataforge-milvus-data 2>/dev/null || true
-	@docker volume create dataforge-redis-data 2>/dev/null || true
-	@docker volume create dataforge-es-data 2>/dev/null || true
-	@docker volume create dataforge-prometheus-data 2>/dev/null || true
-	@docker volume create dataforge-grafana-data 2>/dev/null || true
+	@docker volume create distribute_ai_kafka-data 2>/dev/null || true
+	@docker volume create distribute_ai_minio-data 2>/dev/null || true
+	@docker volume create distribute_ai_milvus-etcd-data 2>/dev/null || true
+	@docker volume create distribute_ai_milvus-data 2>/dev/null || true
+	@docker volume create distribute_ai_redis-data 2>/dev/null || true
+	@docker volume create distribute_ai_es-data 2>/dev/null || true
+	@docker volume create distribute_ai_airflow-postgres-data 2>/dev/null || true
+	@docker volume create distribute_ai_doris-fe-data 2>/dev/null || true
+	@docker volume create distribute_ai_doris-be-data 2>/dev/null || true
+	@docker volume create distribute_ai_prometheus-data 2>/dev/null || true
+	@docker volume create distribute_ai_grafana-data 2>/dev/null || true
 
 # -------------------------------------------
 # Service Access Info

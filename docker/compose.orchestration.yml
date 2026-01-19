@@ -2,39 +2,45 @@
 # DataForge AI - Orchestration Services
 # ===========================================
 # Apache Airflow
-#
-# Usage: docker compose -f docker/compose.base.yml -f docker/compose.orchestration.yml up -d
 
 services:
   # -------------------------------------------
-  # Apache Airflow (Workflow Orchestration)
+  # Airflow PostgreSQL
   # -------------------------------------------
   airflow-postgres:
     image: postgres:15-alpine
     container_name: dataforge-airflow-postgres
     environment:
-      <<: *common-env
+      TZ: Asia/Shanghai
       POSTGRES_USER: airflow
       POSTGRES_PASSWORD: airflow
       POSTGRES_DB: airflow
     volumes:
       - airflow-postgres-data:/var/lib/postgresql/data
     networks:
-      - dataforge-net
+      - dataforge
     healthcheck:
-      <<: *healthcheck-defaults
       test: ["CMD-SHELL", "pg_isready -U airflow"]
-    <<: [*restart-policy, *logging]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
 
+  # -------------------------------------------
+  # Airflow Webserver
+  # -------------------------------------------
   airflow-webserver:
     image: apache/airflow:2.8.0
     container_name: dataforge-airflow-webserver
     command: webserver
+    ports:
+      - "8083:8080"
     environment:
-      <<: *common-env
+      TZ: Asia/Shanghai
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-postgres/airflow
-      AIRFLOW__CORE__FERNET_KEY: ''
+      AIRFLOW__CORE__FERNET_KEY: ""
       AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
       AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "true"
@@ -42,50 +48,52 @@ services:
       _AIRFLOW_WWW_USER_CREATE: "true"
       _AIRFLOW_WWW_USER_USERNAME: admin
       _AIRFLOW_WWW_USER_PASSWORD: admin
-    ports:
-      - "8083:8080"
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./airflow/logs:/opt/airflow/logs
       - ./airflow/plugins:/opt/airflow/plugins
+    networks:
+      - dataforge
     depends_on:
       airflow-postgres:
         condition: service_healthy
-    networks:
-      - dataforge-net
     healthcheck:
-      <<: *healthcheck-defaults
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
       start_period: 60s
-    <<: [*restart-policy, *logging]
+    restart: unless-stopped
 
+  # -------------------------------------------
+  # Airflow Scheduler
+  # -------------------------------------------
   airflow-scheduler:
     image: apache/airflow:2.8.0
     container_name: dataforge-airflow-scheduler
     command: scheduler
     environment:
-      <<: *common-env
+      TZ: Asia/Shanghai
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-postgres/airflow
-      AIRFLOW__CORE__FERNET_KEY: ''
+      AIRFLOW__CORE__FERNET_KEY: ""
       AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./airflow/logs:/opt/airflow/logs
       - ./airflow/plugins:/opt/airflow/plugins
+    networks:
+      - dataforge
     depends_on:
       airflow-webserver:
         condition: service_healthy
-    networks:
-      - dataforge-net
-    <<: [*restart-policy, *logging]
+    restart: unless-stopped
 
 networks:
-  dataforge-net:
+  dataforge:
     external: true
-    name: dataforge-ai_dataforge-net
 
 volumes:
   airflow-postgres-data:
-    name: dataforge-airflow-postgres-data
+    external: true
