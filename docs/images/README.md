@@ -10,14 +10,14 @@ This directory contains auto-generated diagram images from D2 source files.
 
 ## Available diagrams
 
-| Diagram | Description |
-|---------|-------------|
-| `architecture.svg` | System architecture overview |
-| `training-pipeline.svg` | LLM training data pipeline |
-| `rag-pipeline.svg` | RAG knowledge base pipeline |
-| `data-flow.svg` | Data flow overview |
-| `dedup-algorithm.svg` | MinHash deduplication algorithm |
-| `retrieval-strategy.svg` | Hybrid retrieval strategy |
+| Diagram                  | Description                     |
+| ------------------------ | ------------------------------- |
+| `architecture.svg`       | System architecture overview    |
+| `training-pipeline.svg`  | LLM training data pipeline      |
+| `rag-pipeline.svg`       | RAG knowledge base pipeline     |
+| `data-flow.svg`          | Data flow overview              |
+| `dedup-algorithm.svg`    | MinHash deduplication algorithm |
+| `retrieval-strategy.svg` | Hybrid retrieval strategy       |
 
 ## Regenerate locally
 

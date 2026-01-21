@@ -1,0 +1,119 @@
+# DataForge AI - 多级缓存架构
+# 展示L1/L2/L3缓存层次结构
+
+direction: down
+
+title: {
+  label: Multi-Level Cache Architecture
+  near: top-center
+  shape: text
+  style: {
+    font-size: 24
+    bold: true
+    font-color: "#7b1fa2"
+  }
+}
+
+# ==========================================
+# L1 本地缓存
+# ==========================================
+l1: "L1: Local Cache" {
+  style: {
+    fill: "#f3e5f5"
+    stroke: "#7b1fa2"
+    border-radius: 8
+  }
+  
+  caffeine: "Caffeine" {
+    shape: rectangle
+    style: {
+      fill: "#e1bee7"
+      bold: true
+      font-size: 16
+    }
+  }
+  
+  l1_details: {
+    shape: text
+    style: {
+      font-size: 14
+      font-color: "#4a148c"
+    }
+    label: "TTL: 5min\nSize: 1000\nHit Rate: ~30%"
+  }
+}
+
+# ==========================================
+# L2 分布式缓存
+# ==========================================
+l2: "L2: Distributed Cache" {
+  style: {
+    fill: "#f3e5f5"
+    stroke: "#7b1fa2"
+    border-radius: 8
+  }
+  
+  redis: "Redis" {
+    shape: cylinder
+    style: {
+      fill: "#ce93d8"
+      bold: true
+      font-size: 16
+    }
+  }
+  
+  l2_details: {
+    shape: text
+    style: {
+      font-size: 14
+      font-color: "#4a148c"
+    }
+    label: "TTL: 30min\nHit Rate: ~50%"
+  }
+}
+
+# ==========================================
+# L3 存储层缓存
+# ==========================================
+l3: "L3: Storage Layer Cache" {
+  style: {
+    fill: "#f3e5f5"
+    stroke: "#7b1fa2"
+    border-radius: 8
+  }
+  
+  storage: "Milvus + Elasticsearch" {
+    shape: rectangle
+    style: {
+      fill: "#ba68c8"
+      bold: true
+      font-size: 16
+    }
+  }
+  
+  l3_details: {
+    shape: text
+    style: {
+      font-size: 14
+      font-color: "#4a148c"
+    }
+    label: "Real-time queries"
+  }
+}
+
+# ==========================================
+# 响应层
+# ==========================================
+response: "Response" {
+  shape: rectangle
+  style: {
+    fill: "#ce93d8"
+    stroke: "#4a148c"
+    bold: true
+  }
+}
+
+# ==========================================
+# 连接关系
+# ==========================================
+l1 -> l2 -> l3 -> response

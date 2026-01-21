@@ -1,0 +1,124 @@
+# DataForge AI - 数据采集架构
+# 展示从多种数据源到Kafka的数据采集流程
+
+direction: down
+
+title: {
+  label: Data Ingestion Architecture
+  near: top-center
+  shape: text
+  style: {
+    font-size: 24
+    bold: true
+    font-color: "#1565c0"
+  }
+}
+
+# ==========================================
+# 数据源层
+# ==========================================
+sources: Data Sources {
+  style: {
+    fill: "#e3f2fd"
+    stroke: "#1565c0"
+    border-radius: 8
+  }
+  
+  grid-columns: 4
+  
+  mysql: MySQL {
+    shape: cylinder
+    style.fill: "#90caf9"
+  }
+  
+  mongodb: MongoDB {
+    shape: cylinder
+    style.fill: "#64b5f6"
+  }
+  
+  files: Files {
+    shape: document
+    style.fill: "#4fc3f7"
+  }
+  
+  apis: APIs {
+    shape: cloud
+    style.fill: "#29b6f6"
+  }
+}
+
+# ==========================================
+# 数据采集连接器
+# ==========================================
+connectors: Data Connectors {
+  style: {
+    fill: "#fff3e0"
+    stroke: "#f57f17"
+    border-radius: 8
+  }
+  
+  grid-columns: 4
+  
+  debezium: "Debezium\nCDC" {
+    style: {
+      fill: "#ffca28"
+      border-radius: 6
+    }
+  }
+  
+  mongo_conn: "MongoDB\nConnector" {
+    style: {
+      fill: "#ffb74d"
+      border-radius: 6
+    }
+  }
+  
+  file_source: "File\nSource" {
+    style: {
+      fill: "#ffa726"
+      border-radius: 6
+    }
+  }
+  
+  http_source: "HTTP\nSource" {
+    style: {
+      fill: "#ff9800"
+      border-radius: 6
+    }
+  }
+}
+
+# ==========================================
+# Kafka 消息队列
+# ==========================================
+kafka: "Apache Kafka" {
+  shape: queue
+  style: {
+    fill: "#e1bee7"
+    stroke: "#7b1fa2"
+    bold: true
+    font-size: 16
+  }
+  
+  topics: {
+    shape: text
+    style: {
+      font-size: 14
+      font-color: "#4a148c"
+    }
+    label: "• raw-documents\n• cdc-events\n• file-events"
+  }
+}
+
+# ==========================================
+# 连接关系
+# ==========================================
+sources.mysql -> connectors.debezium
+sources.mongodb -> connectors.mongo_conn
+sources.files -> connectors.file_source
+sources.apis -> connectors.http_source
+
+connectors.debezium -> kafka
+connectors.mongo_conn -> kafka
+connectors.file_source -> kafka
+connectors.http_source -> kafka

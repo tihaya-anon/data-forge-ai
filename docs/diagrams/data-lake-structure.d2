@@ -1,0 +1,156 @@
+# DataForge AI - 数据湖目录结构
+# 展示S3上数据湖的分层存储结构
+
+direction: down
+
+title: {
+  label: Data Lake Directory Structure
+  near: top-center
+  shape: text
+  style: {
+    font-size: 24
+    bold: true
+    font-color: "#2e7d32"
+  }
+}
+
+# ==========================================
+# 根目录
+# ==========================================
+root: "s3://dataforge-lake/" {
+  shape: rectangle
+  style: {
+    fill: "#e8f5e9"
+    stroke: "#2e7d32"
+    border-radius: 8
+  }
+}
+
+# ==========================================
+# 训练数据目录
+# ==========================================
+training: "training_data/" {
+  shape: rectangle
+  style: {
+    fill: "#c8e6c9"
+    stroke: "#388e3c"
+  }
+  
+  domain_general: "domain=general/" {
+    shape: rectangle
+    style: {
+      fill: "#a5d6a7"
+    }
+    
+    date1: "dt=2024-01-01/" {
+      shape: rectangle
+      style: {
+        fill: "#81c784"
+      }
+    }
+    
+    date2: "dt=2024-01-02/" {
+      shape: rectangle
+      style: {
+        fill: "#81c784"
+      }
+    }
+    
+    ellipsis1: "..." {
+      shape: text
+    }
+    
+    domain_general.date1 -> domain_general.date2 -> domain_general.ellipsis1
+  }
+  
+  domain_code: "domain=code/" {
+    shape: rectangle
+    style: {
+      fill: "#a5d6a7"
+    }
+  }
+  
+  domain_math: "domain=math/" {
+    shape: rectangle
+    style: {
+      fill: "#a5d6a7"
+    }
+  }
+  
+  domain_instruction: "domain=instruction/" {
+    shape: rectangle
+    style: {
+      fill: "#a5d6a7"
+    }
+  }
+  
+  training.domain_general -> training.domain_code -> training.domain_math -> training.domain_instruction
+}
+
+# ==========================================
+# 知识库目录
+# ==========================================
+knowledge: "knowledge_base/" {
+  shape: rectangle
+  style: {
+    fill: "#c8e6c9"
+    stroke: "#388e3c"
+  }
+  
+  source_confluence: "source=confluence/" {
+    shape: rectangle
+    style: {
+      fill: "#a5d6a7"
+    }
+  }
+  
+  source_git: "source=git/" {
+    shape: rectangle
+    style: {
+      fill: "#a5d6a7"
+    }
+  }
+  
+  source_docs: "source=docs/" {
+    shape: rectangle
+    style: {
+      fill: "#a5d6a7"
+    }
+  }
+  
+  knowledge.source_confluence -> knowledge.source_git -> knowledge.source_docs
+}
+
+# ==========================================
+# 元数据目录
+# ==========================================
+metadata: "metadata/" {
+  shape: rectangle
+  style: {
+    fill: "#c8e6c9"
+    stroke: "#388e3c"
+  }
+  
+  data_quality: "data_quality/" {
+    shape: rectangle
+    style: {
+      fill: "#a5d6a7"
+    }
+  }
+  
+  lineage: "lineage/" {
+    shape: rectangle
+    style: {
+      fill: "#a5d6a7"
+    }
+  }
+  
+  metadata.data_quality -> metadata.lineage
+}
+
+# ==========================================
+# 连接关系
+# ==========================================
+root -> training
+root -> knowledge
+root -> metadata
