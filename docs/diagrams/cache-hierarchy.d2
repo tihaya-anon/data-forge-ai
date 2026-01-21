@@ -1,119 +1,138 @@
-# DataForge AI - 多级缓存架构
-# 展示L1/L2/L3缓存层次结构
+# 多级缓存架构
+# 展示 L1/L2/L3 缓存层次结构
 
-direction: down
+grid-rows: 4
 
 title: {
-  label: Multi-Level Cache Architecture
+  label: 多级缓存架构
   near: top-center
   shape: text
   style: {
     font-size: 24
     bold: true
-    font-color: "#7b1fa2"
+    font-color: "#37474f"
   }
 }
 
-# ==========================================
 # L1 本地缓存
-# ==========================================
-l1: "L1: Local Cache" {
+l1: "L1: 本地缓存" {
   style: {
-    fill: "#f3e5f5"
-    stroke: "#7b1fa2"
+    fill: "#f5f5f5"
+    stroke: "#78909c"
     border-radius: 8
   }
-  
+  grid-columns: 2
+  grid-gap: 10
+
   caffeine: "Caffeine" {
     shape: rectangle
     style: {
-      fill: "#e1bee7"
+      fill: "#9fa8da"
       bold: true
       font-size: 16
+      font-color: "#fff"
     }
   }
-  
+
   l1_details: {
     shape: text
     style: {
-      font-size: 14
-      font-color: "#4a148c"
+      font-size: 12
+      font-color: "#616161"
     }
-    label: "TTL: 5min\nSize: 1000\nHit Rate: ~30%"
+    label: "TTL: 5分钟\n容量: 1000\n命中率: ~30%"
   }
 }
 
-# ==========================================
 # L2 分布式缓存
-# ==========================================
-l2: "L2: Distributed Cache" {
+l2: "L2: 分布式缓存" {
   style: {
-    fill: "#f3e5f5"
-    stroke: "#7b1fa2"
+    fill: "#f5f5f5"
+    stroke: "#78909c"
     border-radius: 8
   }
-  
+  grid-columns: 2
+  grid-gap: 10
+
   redis: "Redis" {
     shape: cylinder
     style: {
-      fill: "#ce93d8"
+      fill: "#9fa8da"
       bold: true
       font-size: 16
+      font-color: "#fff"
     }
   }
-  
+
   l2_details: {
     shape: text
     style: {
-      font-size: 14
-      font-color: "#4a148c"
+      font-size: 12
+      font-color: "#616161"
     }
-    label: "TTL: 30min\nHit Rate: ~50%"
+    label: "TTL: 30分钟\n命中率: ~50%"
   }
 }
 
-# ==========================================
 # L3 存储层缓存
-# ==========================================
-l3: "L3: Storage Layer Cache" {
+l3: "L3: 存储层缓存" {
   style: {
-    fill: "#f3e5f5"
-    stroke: "#7b1fa2"
+    fill: "#f5f5f5"
+    stroke: "#78909c"
     border-radius: 8
   }
-  
+  grid-columns: 2
+  grid-gap: 10
+
   storage: "Milvus + Elasticsearch" {
     shape: rectangle
     style: {
-      fill: "#ba68c8"
+      fill: "#9fa8da"
       bold: true
       font-size: 16
+      font-color: "#fff"
     }
   }
-  
+
   l3_details: {
     shape: text
     style: {
-      font-size: 14
-      font-color: "#4a148c"
+      font-size: 12
+      font-color: "#616161"
     }
-    label: "Real-time queries"
+    label: "实时查询"
   }
 }
 
-# ==========================================
 # 响应层
-# ==========================================
-response: "Response" {
+response: "响应" {
   shape: rectangle
   style: {
-    fill: "#ce93d8"
-    stroke: "#4a148c"
+    fill: "#7986cb"
+    stroke: "#5c6bc0"
     bold: true
+    font-color: "#fff"
   }
 }
 
-# ==========================================
 # 连接关系
-# ==========================================
-l1 -> l2 -> l3 -> response
+l1 -> l2: 未命中 {
+  style: {
+    stroke: "#78909c"
+    stroke-width: 2
+  }
+}
+
+l2 -> l3: 未命中 {
+  style: {
+    stroke: "#78909c"
+    stroke-width: 2
+  }
+}
+
+l3 -> response: 查询 {
+  style: {
+    stroke: "#78909c"
+    stroke-width: 2
+  }
+}

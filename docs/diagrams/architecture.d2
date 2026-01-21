@@ -1,300 +1,248 @@
 # DataForge AI - 系统架构全景图
-# Author: DataForge Team
-# Description: 展示整个平台的分层架构（正方形布局）
+# 展示整个平台的分层架构
 
 grid-columns: 2
+grid-gap: 20
+
+classes: {
+  layer: {
+    style: {
+      fill: "#f5f5f5"
+      stroke: "#78909c"
+      border-radius: 8
+    }
+  }
+}
 
 title: {
-  label: DataForge AI - System Architecture
+  label: DataForge AI - 系统架构
   near: top-center
   shape: text
   style: {
-    font-size: 28
+    font-size: 24
     bold: true
-    font-color: "#1a237e"
+    font-color: "#37474f"
   }
 }
 
-# ==========================================
-# 左上：数据源
-# ==========================================
-sources: Data Sources {
-  style: {
-    fill: "#e3f2fd"
-    stroke: "#1565c0"
-    border-radius: 8
-  }
-  
+sources: "数据源" {
+  class: layer
   grid-columns: 3
-  grid-gap: 0
-  
-  crawl: Common Crawl {
+  grid-gap: 10
+
+  crawl: "Common Crawl" {
     shape: document
-    style.fill: "#bbdefb"
+    style.fill: "#e8eaf6"
   }
-  wiki: Wikipedia {
+  wiki: "Wikipedia" {
     shape: document
-    style.fill: "#bbdefb"
+    style.fill: "#e8eaf6"
   }
-  github: GitHub Code {
+  github: "GitHub Code" {
     shape: document
-    style.fill: "#bbdefb"
+    style.fill: "#e8eaf6"
   }
-  docs: Enterprise Docs {
+  docs: "企业文档" {
     shape: document
-    style.fill: "#bbdefb"
+    style.fill: "#e8eaf6"
   }
-  mysql: MySQL/PG {
+  mysql: "MySQL/PG" {
     shape: cylinder
-    style.fill: "#90caf9"
+    style.fill: "#e8eaf6"
   }
-  api: External APIs {
+  api: "外部 APIs" {
     shape: cloud
-    style.fill: "#64b5f6"
+    style.fill: "#e8eaf6"
   }
 }
 
-# ==========================================
-# 右上：采集层
-# ==========================================
-ingestion: Data Ingestion {
-  style: {
-    fill: "#fff8e1"
-    stroke: "#f9a825"
-    border-radius: 8
-  }
-  
-  grid-columns: 3
-  grid-gap: 0
-  
-  debezium: Debezium CDC {
-    style.fill: "#fff59d"
-  }
-  file-src: File Source {
-    style.fill: "#fff59d"
-  }
-  http-src: HTTP Source {
-    style.fill: "#fff59d"
-  }
-  
-  kafka: Apache Kafka {
+ingestion: "数据采集" {
+  class: layer
+  grid-columns: 4
+  grid-gap: 10
+
+  debezium: "Debezium CDC"
+  file-src: "File Source"
+  http-src: "HTTP Source"
+
+  kafka: "Apache Kafka" {
     shape: queue
     style: {
-      fill: "#ffca28"
-      stroke: "#f57f17"
-      font-color: "#000"
+      fill: "#9fa8da"
+      stroke: "#7986cb"
+      font-color: "#fff"
       bold: true
     }
-    width: 400
   }
-  
-  debezium -> kafka
-  file-src -> kafka
-  http-src -> kafka
 }
 
-# ==========================================
-# 左中：计算层
-# ==========================================
-compute: Compute Layer {
-  style: {
-    fill: "#fce4ec"
-    stroke: "#c2185b"
-    border-radius: 8
-  }
-  
+compute: "计算层" {
+  class: layer
   grid-columns: 3
-  grid-gap: 0
-  
-  spark: Spark {
+  grid-gap: 10
+
+  spark: "Spark\n批处理" {
     shape: hexagon
     style: {
-      fill: "#e65100"
+      fill: "#9fa8da"
       font-color: "#fff"
       bold: true
     }
-    label: "Spark\nBatch"
   }
-  
-  flink: Flink {
+
+  flink: "Flink\n流处理" {
     shape: hexagon
     style: {
-      fill: "#d81b60"
+      fill: "#9fa8da"
       font-color: "#fff"
       bold: true
     }
-    label: "Flink\nStream"
   }
-  
-  ray: Ray {
+
+  ray: "Ray\nML" {
     shape: hexagon
     style: {
-      fill: "#7b1fa2"
+      fill: "#9fa8da"
       font-color: "#fff"
       bold: true
     }
-    label: "Ray\nML"
   }
 }
 
-# ==========================================
-# 右中：存储层
-# ==========================================
-storage: Storage Layer {
-  style: {
-    fill: "#e8f5e9"
-    stroke: "#2e7d32"
-    border-radius: 8
-  }
-  
+storage: "存储层" {
+  class: layer
   grid-columns: 2
-  grid-gap: 0
-  
-  paimon: Paimon {
+  grid-gap: 10
+
+  paimon: "Paimon\n数据湖" {
     shape: cylinder
     style: {
-      fill: "#43a047"
-      font-color: "#fff"
-      bold: true
-    }
-    label: "Paimon\nData Lake"
-  }
-  
-  milvus: Milvus {
-    shape: cylinder
-    style: {
-      fill: "#00acc1"
-      font-color: "#fff"
-      bold: true
-    }
-    label: "Milvus\nVector DB"
-  }
-  
-  redis: Redis {
-    shape: cylinder
-    style: {
-      fill: "#d32f2f"
-      font-color: "#fff"
-      bold: true
-    }
-    label: "Redis\nCache"
-  }
-  
-  es: ES {
-    shape: cylinder
-    style: {
-      fill: "#fdd835"
+      fill: "#c5cae9"
       font-color: "#000"
       bold: true
     }
-    label: "ES\nFull-text"
   }
-}
 
-# ==========================================
-# 左下：服务层
-# ==========================================
-services: Service Layer {
-  style: {
-    fill: "#ede7f6"
-    stroke: "#512da8"
-    border-radius: 8
-  }
-  
-  grid-columns: 3
-  grid-gap: 0
-  
-  rag-svc: RAG Service {
-    style: {
-      fill: "#7c4dff"
-      font-color: "#fff"
-      bold: true
-    }
-  }
-  
-  data-svc: Data Service {
-    style: {
-      fill: "#651fff"
-      font-color: "#fff"
-      bold: true
-    }
-  }
-  
-  doris: Doris (OLAP) {
+  milvus: "Milvus\n向量库" {
     shape: cylinder
     style: {
-      fill: "#304ffe"
+      fill: "#c5cae9"
+      font-color: "#000"
+      bold: true
+    }
+  }
+
+  redis: "Redis\n缓存" {
+    shape: cylinder
+    style: {
+      fill: "#c5cae9"
+      font-color: "#000"
+      bold: true
+    }
+  }
+
+  es: "ES\n全文检索" {
+    shape: cylinder
+    style: {
+      fill: "#c5cae9"
+      font-color: "#000"
+      bold: true
+    }
+  }
+}
+
+services: "服务层" {
+  class: layer
+  grid-columns: 3
+  grid-gap: 10
+
+  rag-svc: "RAG Service" {
+    style: {
+      fill: "#9fa8da"
+      font-color: "#fff"
+      bold: true
+    }
+  }
+
+  data-svc: "Data Service" {
+    style: {
+      fill: "#9fa8da"
+      font-color: "#fff"
+      bold: true
+    }
+  }
+
+  doris: "Doris (OLAP)" {
+    shape: cylinder
+    style: {
+      fill: "#9fa8da"
       font-color: "#fff"
       bold: true
     }
   }
 }
 
-# ==========================================
-# 右下：应用 + 编排
-# ==========================================
-apps-orch: Applications & Orchestration {
-  style: {
-    fill: "#efebe9"
-    stroke: "#5d4037"
-    border-radius: 8
-  }
-  
+apps-orch: "应用与编排" {
+  class: layer
   grid-columns: 3
-  grid-gap: 0
-  
-  llm-train: LLM Training {
-    style.fill: "#bcaaa4"
+  grid-gap: 10
+
+  llm-train: "LLM Training"
+  rag-chat: "RAG Chat"
+  dashboard: "Dashboard"
+  airflow: "Airflow" {
+    style.fill: "#e8eaf6"
   }
-  rag-chat: RAG Chat {
-    style.fill: "#bcaaa4"
+  datahub: "DataHub" {
+    style.fill: "#e8eaf6"
   }
-  dashboard: Dashboard {
-    style.fill: "#bcaaa4"
-  }
-  airflow: Airflow {
-    style.fill: "#00bfa5"
-    style.font-color: "#fff"
-  }
-  datahub: DataHub {
-    style.fill: "#26a69a"
-    style.font-color: "#fff"
-  }
-  prometheus: Prometheus {
-    style.fill: "#e64a19"
-    style.font-color: "#fff"
+  prometheus: "Prometheus" {
+    style.fill: "#e8eaf6"
   }
 }
 
-# ==========================================
-# 连接关系
-# ==========================================
-sources -> ingestion: Ingest {
-  style.stroke: "#1565c0"
-  style.stroke-width: 2
+sources -> ingestion: 采集 {
+  style: {
+    stroke: "#78909c"
+    stroke-width: 2
+  }
 }
 
-ingestion -> compute: Process {
-  style.stroke: "#f9a825"
-  style.stroke-width: 2
+ingestion.debezium -> ingestion.kafka
+ingestion.file-src -> ingestion.kafka
+ingestion.http-src -> ingestion.kafka
+
+ingestion -> compute: 处理 {
+  style: {
+    stroke: "#78909c"
+    stroke-width: 2
+  }
 }
 
-compute -> storage: Store {
-  style.stroke: "#c2185b"
-  style.stroke-width: 2
+compute -> storage: 存储 {
+  style: {
+    stroke: "#78909c"
+    stroke-width: 2
+  }
 }
 
-storage -> services: Serve {
-  style.stroke: "#2e7d32"
-  style.stroke-width: 2
+storage -> services: 服务 {
+  style: {
+    stroke: "#78909c"
+    stroke-width: 2
+  }
 }
 
-services -> apps-orch: Use {
-  style.stroke: "#512da8"
-  style.stroke-width: 2
+services -> apps-orch: 使用 {
+  style: {
+    stroke: "#78909c"
+    stroke-width: 2
+  }
 }
 
-apps-orch -> compute: Schedule {
-  style.stroke: "#455a64"
-  style.stroke-dash: 5
+apps-orch -> compute: 调度 {
+  style: {
+    stroke: "#78909c"
+    stroke-dash: 5
+  }
 }

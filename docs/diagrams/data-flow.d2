@@ -4,341 +4,327 @@
 direction: right
 
 title: {
-  label: Data Flow Overview
+  label: 数据流转全景
   near: top-center
   shape: text
   style: {
     font-size: 24
     bold: true
-    font-color: "#1565c0"
+    font-color: "#37474f"
   }
 }
 
-# ==========================================
 # 数据源
-# ==========================================
-sources: "📥 Data Sources" {
+sources: "数据源" {
   style: {
-    fill: "#e3f2fd"
-    stroke: "#1565c0"
+    fill: "#f5f5f5"
+    stroke: "#78909c"
     border-radius: 8
   }
-  
-  direction: down
-  
-  db: "Databases\nMySQL/PG/Mongo" {
+  grid-columns: 3
+  grid-gap: 10
+
+  db: "数据库\nMySQL/PG/Mongo" {
     shape: cylinder
-    style.fill: "#90caf9"
+    style.fill: "#e8eaf6"
   }
-  
-  files: "Files\nS3/HDFS/NAS" {
+
+  files: "文件\nS3/HDFS/NAS" {
     shape: document
-    style.fill: "#64b5f6"
+    style.fill: "#e8eaf6"
   }
-  
-  api: "APIs\nREST/GraphQL" {
+
+  api: "API\nREST/GraphQL" {
     shape: cloud
-    style.fill: "#42a5f5"
+    style.fill: "#e8eaf6"
   }
 }
 
-# ==========================================
 # Kafka
-# ==========================================
 kafka: "Apache Kafka" {
   shape: queue
   style: {
-    fill: "#ffca28"
-    stroke: "#f57f17"
+    fill: "#9fa8da"
+    stroke: "#7986cb"
     bold: true
     font-size: 16
   }
 }
 
-# ==========================================
 # 实时流处理
-# ==========================================
-realtime: "🔥 Real-time Stream" {
+realtime: "实时流" {
   style: {
-    fill: "#fce4ec"
-    stroke: "#c2185b"
+    fill: "#f5f5f5"
+    stroke: "#78909c"
     border-radius: 8
   }
-  
+  grid-columns: 4
+  grid-gap: 10
+
   flink: "Apache Flink" {
     style: {
-      fill: "#e91e63"
+      fill: "#9fa8da"
       font-color: "#fff"
       bold: true
     }
   }
-  
-  ops: "Operations" {
-    style.fill: "#f8bbd9"
-    
-    direction: down
-    
-    parse: "Parse & Clean"
-    chunk: "Chunk"
-    embed: "Embedding"
+
+  parse: "解析与清洗" {
+    style.fill: "#e8eaf6"
   }
-  
-  flink -> ops
-  
+  chunk: "分块" {
+    style.fill: "#e8eaf6"
+  }
+  embed: "向量化" {
+    style.fill: "#e8eaf6"
+  }
+
   latency: {
     shape: text
     style: {
       font-size: 11
       italic: true
-      font-color: "#880e4f"
+      font-color: "#616161"
     }
-    label: "Latency: < 5s"
+    label: "延迟: < 5秒"
   }
+
+  flink -> parse -> chunk -> embed
 }
 
-# ==========================================
 # 批处理
-# ==========================================
-batch: "⚡ Batch Processing" {
+batch: "批处理" {
   style: {
-    fill: "#fff3e0"
-    stroke: "#e65100"
+    fill: "#f5f5f5"
+    stroke: "#78909c"
     border-radius: 8
   }
-  
+  grid-columns: 4
+  grid-gap: 10
+
   spark: "Apache Spark" {
     style: {
-      fill: "#ff9800"
+      fill: "#9fa8da"
       font-color: "#fff"
       bold: true
     }
   }
-  
-  ops: "Operations" {
-    style.fill: "#ffe0b2"
-    
-    direction: down
-    
-    clean: "Clean & Dedup"
-    quality: "Quality Filter"
-    embed: "Batch Embedding"
+
+  clean: "清洗与去重" {
+    style.fill: "#e8eaf6"
   }
-  
-  spark -> ops
-  
+  quality: "质量过滤" {
+    style.fill: "#e8eaf6"
+  }
+  embed: "批量向量化" {
+    style.fill: "#e8eaf6"
+  }
+
   throughput: {
     shape: text
     style: {
       font-size: 11
       italic: true
-      font-color: "#e65100"
+      font-color: "#616161"
     }
-    label: "Throughput: 50TB/day"
+    label: "吞吐量: 50TB/天"
   }
+
+  spark -> clean -> quality -> embed
 }
 
-# ==========================================
 # 数据湖
-# ==========================================
-lake: "🏠 Data Lake" {
+lake: "数据湖" {
   style: {
-    fill: "#e8f5e9"
-    stroke: "#2e7d32"
+    fill: "#f5f5f5"
+    stroke: "#78909c"
     border-radius: 8
   }
-  
+  grid-columns: 4
+  grid-gap: 10
+
   paimon: "Apache Paimon" {
     shape: cylinder
     style: {
-      fill: "#43a047"
+      fill: "#9fa8da"
       font-color: "#fff"
       bold: true
     }
   }
-  
-  tables: "Tables" {
-    style.fill: "#a5d6a7"
-    
-    direction: down
-    
-    training: "training_data"
-    knowledge: "knowledge_docs"
-    metadata: "metadata"
+
+  training: "training_data" {
+    style.fill: "#e8eaf6"
   }
-  
+  knowledge: "knowledge_docs" {
+    style.fill: "#e8eaf6"
+  }
+  metadata: "metadata" {
+    style.fill: "#e8eaf6"
+  }
+
   features: {
     shape: text
     style: {
       font-size: 11
-      font-color: "#2e7d32"
+      font-color: "#616161"
     }
-    label: "• Version control\n• Time travel\n• Incremental update"
+    label: "• 版本控制\n• 时间旅行\n• 增量更新"
   }
 }
 
-# ==========================================
 # 向量存储
-# ==========================================
-vector: "🔍 Vector Store" {
+vector: "向量存储" {
   style: {
-    fill: "#e0f7fa"
-    stroke: "#00838f"
+    fill: "#f5f5f5"
+    stroke: "#78909c"
     border-radius: 8
   }
-  
+  grid-columns: 3
+  grid-gap: 10
+
   milvus: "Milvus" {
     shape: cylinder
     style: {
-      fill: "#00acc1"
+      fill: "#9fa8da"
       font-color: "#fff"
       bold: true
     }
   }
-  
-  index: "HNSW Index" {
-    style.fill: "#80deea"
-    label: "HNSW Index\n100M+ vectors"
+
+  index: "HNSW 索引" {
+    style.fill: "#e8eaf6"
+    label: "1亿+ 向量"
   }
-  
+
   perf: {
     shape: text
     style: {
       font-size: 11
-      font-color: "#006064"
+      font-color: "#616161"
     }
     label: "P99 < 50ms"
   }
 }
 
-# ==========================================
 # 应用
-# ==========================================
-apps: "🎯 Applications" {
+apps: "应用" {
   style: {
-    fill: "#ede7f6"
-    stroke: "#512da8"
+    fill: "#f5f5f5"
+    stroke: "#78909c"
     border-radius: 8
   }
-  
-  direction: down
-  
-  rag: "RAG Service" {
+  grid-columns: 3
+  grid-gap: 10
+
+  rag: "RAG 服务" {
     style: {
-      fill: "#7c4dff"
-      font-color: "#fff"
+      fill: "#c5cae9"
+      font-color: "#000"
     }
   }
-  
-  train: "LLM Training" {
+
+  train: "LLM 训练" {
     style: {
-      fill: "#651fff"
-      font-color: "#fff"
+      fill: "#c5cae9"
+      font-color: "#000"
     }
   }
-  
-  analytics: "Analytics" {
+
+  analytics: "数据分析" {
     style: {
-      fill: "#536dfe"
-      font-color: "#fff"
+      fill: "#c5cae9"
+      font-color: "#000"
     }
   }
 }
 
-# ==========================================
 # 连接 - 实时流
-# ==========================================
 sources.db -> kafka: CDC {
   style: {
-    stroke: "#c2185b"
+    stroke: "#78909c"
     stroke-width: 2
   }
 }
 
-kafka -> realtime: Consume {
+kafka -> realtime: 消费 {
   style: {
-    stroke: "#c2185b"
+    stroke: "#78909c"
     stroke-width: 2
   }
 }
 
-realtime -> vector: Vectors {
+realtime -> vector: 向量 {
   style: {
-    stroke: "#00838f"
+    stroke: "#78909c"
     stroke-width: 2
   }
 }
 
-realtime -> lake: Metadata {
+realtime -> lake: 元数据 {
   style: {
-    stroke: "#2e7d32"
+    stroke: "#78909c"
     stroke-width: 2
   }
 }
 
-# ==========================================
 # 连接 - 批处理
-# ==========================================
-sources.files -> batch: Load {
+sources.files -> batch: 加载 {
   style: {
-    stroke: "#e65100"
+    stroke: "#78909c"
     stroke-width: 2
     stroke-dash: 3
   }
 }
 
-kafka -> batch: Batch consume {
+kafka -> batch: 批量消费 {
   style: {
-    stroke: "#e65100"
+    stroke: "#78909c"
     stroke-width: 2
     stroke-dash: 3
   }
 }
 
-batch -> lake: Write {
+batch -> lake: 写入 {
   style: {
-    stroke: "#2e7d32"
+    stroke: "#78909c"
     stroke-width: 2
     stroke-dash: 3
   }
 }
 
-batch -> vector: Bulk index {
+batch -> vector: 批量索引 {
   style: {
-    stroke: "#00838f"
+    stroke: "#78909c"
     stroke-width: 2
     stroke-dash: 3
   }
 }
 
-# ==========================================
 # 连接 - 应用
-# ==========================================
 vector -> apps.rag {
-  style.stroke: "#512da8"
+  style.stroke: "#78909c"
 }
 
 lake -> apps.train {
-  style.stroke: "#512da8"
+  style.stroke: "#78909c"
 }
 
 lake -> apps.analytics {
-  style.stroke: "#512da8"
+  style.stroke: "#78909c"
 }
 
-# ==========================================
 # 图例
-# ==========================================
-legend: "Legend" {
+legend: "图例" {
   near: bottom-center
   style: {
     fill: "#fafafa"
-    stroke: "#9e9e9e"
+    stroke: "#bdbdbd"
     border-radius: 4
   }
-  
+
   items: {
     shape: text
     style.font-size: 11
-    label: "── Real-time flow    - - Batch flow"
+    label: "── 实时流    - - 批处理流"
   }
 }
