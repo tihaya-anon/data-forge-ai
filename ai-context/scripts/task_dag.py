@@ -406,6 +406,40 @@ def print_analysis_report(tasks: List[dict], analysis: dict, critical_path: Tupl
 # 主函数
 # =============================================================================
 
+def mark_tasks_as_in_progress(tasks_file_path, task_ids):
+    """将指定的任务标记为"进行中"，并验证任务ID是否合法"""
+    import yaml
+    
+    # 读取任务文件
+    with open(tasks_file_path, 'r', encoding='utf-8') as f:
+        data = yaml.safe_load(f)
+
+    # 获取所有有效任务ID
+    all_task_ids = {task['编号'] for task in data.get('任务', [])}
+    
+    # 验证输入的任务ID是否都合法
+    invalid_tasks = [tid for tid in task_ids if tid not in all_task_ids]
+    if invalid_tasks:
+        print(f"❌ 错误: 以下任务ID不存在: {', '.join(invalid_tasks)}")
+        return False
+
+    # 更新任务状态
+    updated = 0
+    for task in data.get('任务', []):
+        if task['编号'] in task_ids and task.get('状态') != '进行中':
+            old_status = task.get('状态', '待处理')
+            task['状态'] = '进行中'
+            print(f"Updated: {task['编号']} - {task['名称']} ('{old_status}' → '进行中')")
+            updated += 1
+
+    # 写回文件
+    with open(tasks_file_path, 'w', encoding='utf-8') as f:
+        yaml.dump(data, f, default_flow_style=False, allow_unicode=True)
+
+    print(f'\n✅ 总共更新了 {updated} 个任务的状态为"进行中"')
+    return updated > 0
+
+
 def mark_in_progress_as_done(tasks_file_path):
     """将所有"进行中"的任务标记为"已完成" """
     import yaml
@@ -557,6 +591,8 @@ def main():
                         help='prompt模板文件路径（配合--generate-prompt使用）')
     parser.add_argument('--mark-done', action='store_true',
                         help='将所有"进行中"的任务标记为"已完成"')
+    parser.add_argument('--mark-in-progress', 
+                        help='将指定任务标记为"进行中"，用逗号分隔多个任务ID (例如: T-001,T-002,T-003)')
                         
     args = parser.parse_args()
     
@@ -576,6 +612,12 @@ def main():
     if not tasks:
         print("警告: 没有找到任务定义")
         sys.exit(0)
+
+    # 处理标记进行中命令
+    if args.mark_in_progress:
+        task_ids = [tid.strip() for tid in args.mark_in_progress.split(',')]
+        mark_tasks_as_in_progress(args.tasks, task_ids)
+        return
 
     # 处理标记完成命令
     if args.mark_done:
