@@ -4,15 +4,30 @@ Kafka Producer implementation for DataForge AI.
 This module provides a wrapper around kafka-python's KafkaProducer with:
 - Connection management and configuration
 - Synchronous and asynchronous message sending
-- Basic error handling
+- Batch sending optimization
+- Retry mechanism with exponential backoff
+- Monitoring metrics (latency, throughput)
+- Compression support
 """
 
 import json
 import logging
-from typing import Any, Dict, Optional, Union, Callable
+import time
+from typing import Any, Dict, Optional, Union, Callable, List
 from kafka import KafkaProducer
 from kafka.errors import KafkaError, KafkaTimeoutError, NoBrokersAvailable
 from pydantic import BaseModel, Field
+
+# Try to import metrics collectors, but make them optional
+try:
+    from dataforge_ai.common.metrics.interface import MetricsCollector
+    from dataforge_ai.common.metrics.prometheus import PrometheusMetricsCollector
+    METRICS_AVAILABLE = True
+except ImportError:
+    logging.warning("Metrics libraries not available. Continuing without metrics support.")
+    MetricsCollector = None
+    PrometheusMetricsCollector = None
+    METRICS_AVAILABLE = False
 
 
 logger = logging.getLogger(__name__)
@@ -31,6 +46,7 @@ class KafkaProducerConfig(BaseModel):
         description="Number of acknowledgments the producer requires"
     )
     retries: int = Field(default=3, description="Number of retry attempts")
+    retry_backoff_ms: int = Field(default=100, description="Retry backoff in milliseconds")
     batch_size: int = Field(default=16384, description="Batch size in bytes")
     linger_ms: int = Field(default=5, description="Linger time in milliseconds")
     buffer_memory: int = Field(default=33554432, description="Buffer memory in bytes")
@@ -46,23 +62,51 @@ class KafkaProducerConfig(BaseModel):
         default=None, 
         description="Function to serialize values"
     )
+    enable_metrics: bool = Field(default=True, description="Enable metrics collection")
+
+
+class NoOpMetricsCollector:
+    """A no-op metrics collector to use when metrics are disabled or unavailable."""
+    
+    def record_latency(self, metric_name: str, value: float, labels: Dict[str, str] = None):
+        """Record a latency measurement."""
+        pass
+    
+    def increment_counter(self, metric_name: str, labels: Dict[str, str] = None, value: float = 1.0):
+        """Increment a counter."""
+        pass
 
 
 class DataForgeKafkaProducer:
     """
     A Kafka producer wrapper for DataForge AI with connection management,
-    synchronous/asynchronous sending capabilities, and basic error handling.
+    synchronous/asynchronous sending capabilities, batch optimization,
+    retry mechanism with exponential backoff, monitoring metrics, and compression support.
     """
     
-    def __init__(self, config: KafkaProducerConfig):
+    def __init__(self, config: KafkaProducerConfig, metrics_collector: Optional['MetricsCollector'] = None):
         """
         Initialize the Kafka producer with the given configuration.
         
         Args:
             config: Configuration object for the Kafka producer
+            metrics_collector: Optional metrics collector for monitoring
         """
         self.config = config
         self._producer: Optional[KafkaProducer] = None
+        
+        # Setup metrics collector
+        if config.enable_metrics and METRICS_AVAILABLE and metrics_collector is None:
+            try:
+                self._metrics_collector = PrometheusMetricsCollector()
+            except RuntimeError:
+                # If Prometheus is not available, log warning and continue without metrics
+                logger.warning("Prometheus metrics not available. Continuing without metrics support.")
+                self._metrics_collector = NoOpMetricsCollector()
+        elif metrics_collector:
+            self._metrics_collector = metrics_collector
+        else:
+            self._metrics_collector = NoOpMetricsCollector()
         
         # Set up serializers if not provided
         key_serializer = config.key_serializer or str.encode
@@ -76,6 +120,7 @@ class DataForgeKafkaProducer:
                 client_id=config.client_id,
                 acks=config.acks,
                 retries=config.retries,
+                retry_backoff_ms=config.retry_backoff_ms,
                 batch_size=config.batch_size,
                 linger_ms=config.linger_ms,
                 buffer_memory=config.buffer_memory,
@@ -105,6 +150,9 @@ class DataForgeKafkaProducer:
         Returns:
             True if successful, False otherwise
         """
+        start_time = time.time()
+        success = False
+        
         try:
             # Send message synchronously by waiting for the future
             future = self._producer.send(topic, value=value, key=key)
@@ -114,6 +162,7 @@ class DataForgeKafkaProducer:
                 f"Message sent successfully to topic={record_metadata.topic}, "
                 f"partition={record_metadata.partition}, offset={record_metadata.offset}"
             )
+            success = True
             return True
             
         except KafkaTimeoutError:
@@ -125,6 +174,12 @@ class DataForgeKafkaProducer:
         except Exception as e:
             logger.error(f"Unexpected error while sending message to topic '{topic}': {str(e)}")
             return False
+        finally:
+            # Record metrics
+            duration = time.time() - start_time
+            if self._metrics_collector and success:
+                self._metrics_collector.record_latency("kafka_producer_send_duration", duration, {"topic": topic})
+                self._metrics_collector.increment_counter("kafka_producer_messages_sent_total", {"topic": topic})
     
     def send_async(self, topic: str, value: Any, key: Optional[str] = None, 
                    callback: Optional[Callable] = None) -> bool:
@@ -140,9 +195,18 @@ class DataForgeKafkaProducer:
         Returns:
             True if the message was accepted for sending, False otherwise
         """
+        start_time = time.time()
+        
         try:
             self._producer.send(topic, value=value, key=key, callback=callback)
             logger.debug(f"Asynchronous message sent to topic '{topic}'")
+            
+            # Record metrics
+            duration = time.time() - start_time
+            if self._metrics_collector:
+                self._metrics_collector.record_latency("kafka_producer_send_duration", duration, {"topic": topic})
+                self._metrics_collector.increment_counter("kafka_producer_messages_sent_total", {"topic": topic})
+            
             return True
             
         except KafkaError as e:
@@ -151,7 +215,86 @@ class DataForgeKafkaProducer:
         except Exception as e:
             logger.error(f"Unexpected error while sending message to topic '{topic}': {str(e)}")
             return False
-    
+
+    def send_batch(self, topic: str, messages: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """
+        Send a batch of messages to Kafka with retry mechanism.
+        
+        Args:
+            topic: Topic name to send the messages to
+            messages: List of message dictionaries with 'value' and optional 'key'
+            
+        Returns:
+            Dictionary with success count, failure count, and total duration
+        """
+        start_time = time.time()
+        successful_sends = 0
+        failed_sends = 0
+        
+        for i, msg in enumerate(messages):
+            value = msg.get('value')
+            key = msg.get('key')
+            
+            # Apply exponential backoff for retries
+            success = False
+            attempt = 0
+            backoff_time = self.config.retry_backoff_ms / 1000.0  # Convert to seconds
+            
+            while attempt <= self.config.retries and not success:
+                try:
+                    future = self._producer.send(topic, value=value, key=key)
+                    record_metadata = future.get(timeout=10)
+                    
+                    logger.debug(
+                        f"Message {i} sent successfully to topic={record_metadata.topic}, "
+                        f"partition={record_metadata.partition}, offset={record_metadata.offset}"
+                    )
+                    success = True
+                    successful_sends += 1
+                except KafkaTimeoutError:
+                    logger.warning(f"Attempt {attempt+1} failed for message {i} due to timeout")
+                    if attempt < self.config.retries:
+                        time.sleep(backoff_time)
+                        # Exponential backoff: double the wait time after each failure
+                        backoff_time *= 2
+                    attempt += 1
+                except KafkaError as e:
+                    logger.error(f"Kafka error for message {i}: {str(e)}")
+                    if attempt < self.config.retries:
+                        time.sleep(backoff_time)
+                        backoff_time *= 2
+                    attempt += 1
+                except Exception as e:
+                    logger.error(f"Unexpected error for message {i}: {str(e)}")
+                    break  # Don't retry on unexpected errors
+            
+            if not success:
+                logger.error(f"All retry attempts failed for message {i}")
+                failed_sends += 1
+        
+        duration = time.time() - start_time
+        
+        # Record batch metrics
+        if self._metrics_collector:
+            self._metrics_collector.record_latency("kafka_producer_batch_send_duration", duration, {
+                "topic": topic, 
+                "message_count": str(len(messages))
+            })
+            self._metrics_collector.increment_counter("kafka_producer_batches_sent_total", {"topic": topic})
+            self._metrics_collector.increment_counter("kafka_producer_messages_sent_total", {
+                "topic": topic
+            }, successful_sends)
+            self._metrics_collector.increment_counter("kafka_producer_messages_failed_total", {
+                "topic": topic
+            }, failed_sends)
+        
+        return {
+            "successful_sends": successful_sends,
+            "failed_sends": failed_sends,
+            "total_messages": len(messages),
+            "duration_seconds": duration
+        }
+
     def flush(self):
         """
         Flush all pending messages to Kafka.
@@ -178,15 +321,16 @@ class DataForgeKafkaProducer:
         self.close()
 
 
-def create_kafka_producer(config_dict: Dict[str, Any]) -> DataForgeKafkaProducer:
+def create_kafka_producer(config_dict: Dict[str, Any], metrics_collector: Optional['MetricsCollector'] = None) -> DataForgeKafkaProducer:
     """
     Factory function to create a Kafka producer instance from a dictionary configuration.
     
     Args:
         config_dict: Dictionary containing producer configuration
+        metrics_collector: Optional metrics collector for monitoring
         
     Returns:
         DataForgeKafkaProducer instance
     """
     config = KafkaProducerConfig(**config_dict)
-    return DataForgeKafkaProducer(config)
+    return DataForgeKafkaProducer(config, metrics_collector)
