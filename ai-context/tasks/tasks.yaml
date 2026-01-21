@@ -276,7 +276,7 @@ DAG配置:
     - 过滤规则引擎
 
     '
-  状态: 进行中
+  状态: 已完成
   编号: T-204
   范围:
   - src/pipeline/spark/quality/
