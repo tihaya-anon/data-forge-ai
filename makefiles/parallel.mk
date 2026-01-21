@@ -68,29 +68,12 @@ generate-agent-prompt: ## 为指定任务生成AI代理的prompt (usage: make ge
 # ============================================================================
 
 .PHONY: parallel-setup
-parallel-setup: ## 创建并行开发工作树 (usage: make parallel-setup AGENTS=3 TASKS="T-001,T-002,T-003")
+parallel-setup: ## 创建并行开发工作树 (usage: make parallel-setup AGENTS=3)
 	@if [ -z "$(AGENTS)" ]; then \
 		printf "$(RED)错误: 请指定 agent 数量 (usage: make parallel-setup AGENTS=N)$(NC)\n"; \
 		exit 1; \
 	fi
 	@printf "$(CYAN)正在为 $(AGENTS) 个 agent 设置并行开发环境...$(NC)\n"
-	# 如果提供了TASKS参数，则为每个任务生成对应的prompt
-	if [ -n "$(TASKS)" ]; then \
-		printf "$(CYAN)为指定任务生成AI代理prompt...$(NC)\n"; \
-		TASK_LIST=$$(echo $(TASKS) | tr ',' '\n'); \
-		i=1; \
-		for task_id in $$TASK_LIST; do \
-			if [ $$i -le $(AGENTS) ]; then \
-				OUTPUT_PROMPT_FILE="AGENT_$${i}_PROMPT.md"; \
-				make generate-agent-prompt TASK_ID=$$task_id OUTPUT_FILE=$$OUTPUT_PROMPT_FILE || { \
-					printf "$(RED)生成任务 $$task_id 的prompt失败$(NC)\n"; \
-					exit 1; \
-				}; \
-				printf "$(GREEN)任务 $$task_id 的prompt已保存至 $$OUTPUT_PROMPT_FILE$(NC)\n"; \
-				i=$$((i+1)); \
-			fi; \
-		done; \
-	fi
 	for i in $$(seq 1 $(AGENTS)); do \
 		WORKTREE_DIR="$(WORKTREE_BASE_DIR)$${i}"; \
 		if [ -d "$$WORKTREE_DIR" ]; then \
@@ -98,14 +81,48 @@ parallel-setup: ## 创建并行开发工作树 (usage: make parallel-setup AGENT
 		else \
 			printf "$(GREEN)创建工作树: $$WORKTREE_DIR$(NC)\n"; \
 			git worktree add "$$WORKTREE_DIR" -b "agent-$${i}-branch" || exit 1; \
-			# 将生成的prompt文件复制到工作树目录 \
-			if [ -f "AGENT_$${i}_PROMPT.md" ]; then \
-				cp "AGENT_$${i}_PROMPT.md" "$$WORKTREE_DIR/" ; \
-				printf "$(GREEN)已将AGENT_$${i}_PROMPT.md复制到工作树$$WORKTREE_DIR$(NC)\n"; \
-			fi; \
 		fi; \
 	done
 	@printf "$(GREEN)✓ 并行开发环境设置完成$(NC)\n"
+
+.PHONY: generate-agent-prompts
+generate-agent-prompts: ## 为指定任务生成AI代理prompts (usage: make generate-agent-prompts TASKS="T-001,T-002,T-003")
+	@if [ -z "$(TASKS)" ]; then \
+		printf "$(RED)错误: 请指定任务列表 (usage: make generate-agent-prompts TASKS=T-001,T-002,T-003)$(NC)\n"; \
+		exit 1; \
+	fi
+	@printf "$(CYAN)正在为指定任务生成AI代理prompts...$(NC)\n"
+	TASK_LIST=$$(echo $(TASKS) | tr ',' '\n'); \
+	i=1; \
+	for task_id in $$TASK_LIST; do \
+		OUTPUT_PROMPT_FILE="AGENT_$${i}_PROMPT.md"; \
+		make generate-agent-prompt TASK_ID=$$task_id OUTPUT_FILE=$$OUTPUT_PROMPT_FILE || { \
+			printf "$(RED)生成任务 $$task_id 的prompt失败$(NC)\n"; \
+			exit 1; \
+		}; \
+		printf "$(GREEN)任务 $$task_id 的prompt已保存至 $$OUTPUT_PROMPT_FILE$(NC)\n"; \
+		# 将生成的prompt文件复制到对应的工作树目录 \
+		WORKTREE_DIR="$(WORKTREE_BASE_DIR)$${i}"; \
+		if [ -d "$$WORKTREE_DIR" ]; then \
+			cp "$$OUTPUT_PROMPT_FILE" "$$WORKTREE_DIR/" ; \
+			printf "$(GREEN)已将$$OUTPUT_PROMPT_FILE复制到工作树$$WORKTREE_DIR$(NC)\n"; \
+		else \
+			printf "$(YELLOW)警告: 工作树 $$WORKTREE_DIR 不存在，跳过复制$(NC)\n"; \
+		fi; \
+		i=$$((i+1)); \
+	done
+	@printf "$(GREEN)✓ 所有prompts已生成并复制到对应工作树$(NC)\n"
+
+.PHONY: parallel-setup-with-prompts
+parallel-setup-with-prompts: ## 创建并行开发环境并生成prompts (usage: make parallel-setup-with-prompts AGENTS=3 TASKS="T-001,T-002,T-003")
+	@if [ -z "$(AGENTS)" ] || [ -z "$(TASKS)" ]; then \
+		printf "$(RED)错误: 请指定 agent 数量和任务列表 (usage: make parallel-setup-with-prompts AGENTS=3 TASKS=T-001,T-002,T-003)$(NC)\n"; \
+		exit 1; \
+	fi
+	@printf "$(CYAN)正在设置带prompts的并行开发环境...$(NC)\n"
+	make parallel-setup AGENTS=$(AGENTS)
+	make generate-agent-prompts TASKS=$(TASKS)
+	@printf "$(GREEN)✓ 带prompts的并行开发环境设置完成$(NC)\n"
 
 .PHONY: parallel-status
 parallel-status: ## 查看工作树状态
@@ -113,7 +130,7 @@ parallel-status: ## 查看工作树状态
 	@git worktree list
 
 .PHONY: parallel-sync
-parallel-sync: ## 同步所有工作树的更改到主分支
+parallel-sync: ## 同步所有工作树的更改到主分支（旧版命令，保留兼容性）
 	@printf "$(CYAN)正在同步所有工作树更改到主分支...$(NC)\n"
 	@for dir in $(WORKTREE_BASE_DIR)*; do \
 		if [ -d "$$dir" ] && [ -d "$$dir/.git" ]; then \
@@ -138,6 +155,27 @@ parallel-sync: ## 同步所有工作树的更改到主分支
 		printf "$(YELLOW)没有需要提交的更改$(NC)\n"; \
 	fi
 	@printf "$(GREEN)✓ 所有工作树同步完成$(NC)\n"
+
+.PHONY: parallel-fetch
+parallel-fetch: ## 在各工作树分支上同步主分支更改并清理PROMPT文件
+	@printf "$(CYAN)正在同步主分支更改到各工作树并清理PROMPT文件...$(NC)\n"
+	@git fetch origin main
+	@for dir in $(WORKTREE_BASE_DIR)*; do \
+		if [ -d "$$dir" ] && [ -d "$$dir/.git" ]; then \
+			printf "$(GREEN)处理工作树: $$dir$(NC)\n"; \
+			# 同步主分支更改到工作树 \
+			cd "$$dir" && git fetch origin main && git reset --hard origin/main; \
+			# 删除AGENT_*_PROMPT.md文件 \
+			if [ -f "$$dir/AGENT_*_PROMPT.md" ]; then \
+				rm -f "$$dir"/AGENT_*_PROMPT.md; \
+				echo "$(GREEN)  已删除PROMPT文件$(NC)\n"; \
+			fi; \
+			# 返回主目录 \
+			cd "$(shell pwd)"; \
+		fi; \
+	done;
+	@printf "$(GREEN)✓ 所有工作树已同步主分支并清理PROMPT文件$(NC)\n"
+
 .PHONY: parallel-delete-all
 parallel-delete-all: ## 删除所有并行工作树
 	@printf "$(CYAN)正在删除所有并行工作树...$(NC)\n"

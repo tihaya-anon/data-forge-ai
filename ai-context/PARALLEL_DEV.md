@@ -52,7 +52,7 @@ AI Agents 会：
 1. 读取 `tasks.yaml` 了解任务结构和依赖关系
 2. 根据分析结果创建独立的 Git Worktree
 3. 在各自的工作区中并行执行任务
-4. 完成后更新主分支的 `tasks.yaml` 中的状态
+4. 完成后由主分支统一合并所有更改
 
 ---
 
@@ -93,10 +93,12 @@ make task-status       # 显示任务完成进度
 make task-edit         # 编辑任务清单
 
 # === 并行开发 ===
-make parallel-setup AGENTS=3   # 创建 3 个工作树用于并行开发
-make parallel-status           # 查看工作树状态
-make parallel-sync             # 同步所有工作树的最新更改
-make parallel-delete-all       # 删除所有并行工作树
+make parallel-setup AGENTS=3            # 创建 3 个工作树用于并行开发
+make generate-agent-prompts TASKS="T-001,T-002,T-003"  # 为指定任务生成prompts
+make parallel-setup-with-prompts AGENTS=3 TASKS="T-001,T-002,T-003"  # 创建工作树并生成prompts
+make parallel-status                    # 查看工作树状态
+make parallel-fetch                     # 在各工作树分支上同步主分支更改并清理PROMPT文件
+make parallel-delete-all                # 删除所有并行工作树
 
 # === DAG 分析 ===
 make task-analyze      # 分析并行度和关键路径
@@ -113,8 +115,14 @@ make task-dag          # 生成 DAG 可视化图
 # 分析任务并行度，获取建议的 Agent 数量
 make task-analyze
 
-# 创建多个工作树用于并行开发（例如，创建3个工作树）
+# 方法一：只创建工作树
 make parallel-setup AGENTS=3
+
+# 方法二：为指定任务生成prompts（需要先创建工作树）
+make generate-agent-prompts TASKS="T-001,T-002,T-003"
+
+# 方法三：一次性创建工作树并生成prompts
+make parallel-setup-with-prompts AGENTS=3 TASKS="T-001,T-002,T-003"
 ```
 
 这将创建类似如下的目录结构：
@@ -186,12 +194,16 @@ git add .
 git commit -m "[T-003] 完成 CI/CD 流水线配置"
 ```
 
-### 4. 同步和合并更改
+### 4. 合并更改
 
-```bash
-# 各 Agent 将更改推送到主工作区
+```
+# 所有更改由主分支统一合并
 # 在主项目根目录执行
-make parallel-sync
+# 依次合并各agent分支到主分支
+git merge -s recursive -X theirs agent-1-branch --no-edit
+git merge -s recursive -X theirs agent-2-branch --no-edit
+git merge -s recursive -X theirs agent-3-branch --no-edit
+# ... 依此类推
 ```
 
 ### 5. 更新任务状态
@@ -223,15 +235,18 @@ git worktree list
 make parallel-status
 ```
 
-### 同步工作树
+### Fetch工作树（同步主分支并清理PROMPT文件）
 
-```bash
-# 拉取所有最新更改
-make parallel-sync
+```
+# 在各工作树分支上同步主分支更改并清理PROMPT文件
+make parallel-fetch
 
 # 手动同步特定工作树
 cd agent-workspace-1
-git pull origin main
+git fetch origin main
+git reset --hard origin/main
+# 删除可能存在的AGENT_*_PROMPT.md文件
+rm -f AGENT_*_PROMPT.md
 ```
 
 ### 清理工作树
@@ -305,7 +320,7 @@ git worktree remove agent-workspace-1
 
 ## 示例：完整工作流
 
-```bash
+```
 # 1. 查看任务结构
 make task-analyze
 # 输出: 11 个任务，5 层，推荐 2 个并行度
@@ -320,16 +335,21 @@ make task-next
 # 4. Agent 分别在独立工作树中工作
 # Agent 1 在 agent-workspace-1 处理 T-001
 # Agent 2 在 agent-workspace-2 处理 T-002
-# Agent 3 在主工作区处理 T-003
+# Agent 3 在 agent-workspace-3 处理 T-003
 
-# 5. 各 Agent 完成任务后提交更改
+# 5. 各 Agent 完成任务后提交更改到各自分支
 # 在各自的工作树中执行
 git add .
 git commit -m "[T-XXX] 完成具体任务"
 git push origin <branch>
 
-# 6. 同步所有更改并更新任务状态
-make parallel-sync
+# 6. 主分支合并所有更改并更新任务状态
+# 回到主分支进行合并
+git checkout main
+git merge -s recursive -X theirs agent-1-branch --no-edit
+git merge -s recursive -X theirs agent-2-branch --no-edit
+git merge -s recursive -X theirs agent-3-branch --no-edit
+
 # 更新 ai-context/tasks/tasks.yaml 中的状态为 "已完成"
 
 # 7. 查看进度
@@ -345,7 +365,7 @@ make task-next
 
 ## 提交规范
 
-```bash
+```
 git commit -m "[T-004] 实现 Kafka Producer 基础结构"
 git commit -m "[T-004] 添加重试机制"
 git commit -m "[T-004] 完成单元测试"
