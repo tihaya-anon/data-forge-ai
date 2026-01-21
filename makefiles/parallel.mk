@@ -63,6 +63,16 @@ task-mark-in-progress-as-done: ## 将所有"进行中"的任务标记为"已完�
 	@python3 $(DAG_SCRIPT) --tasks $(TASKS_FILE) --mark-done
 	@echo "✓ 任务状态更新完成"
 
+.PHONY: task-mark-as-in-progress
+task-mark-as-in-progress: ## 将指定任务标记为"进行中" (make task-mark-as-in-progress TASKS="T-001,T-002,T-003")
+	@if [ -z "$(TASKS)" ]; then \
+		printf "$(RED)错误: 请指定任务ID列表 (usage: make task-mark-as-in-progress TASKS=T-001,T-002,T-003)$(NC)\n"; \
+		exit 1; \
+	fi
+	@echo "正在将指定任务标记为'进行中'..."
+	@python3 $(DAG_SCRIPT) --tasks $(TASKS_FILE) --mark-in-progress $(TASKS)
+	@echo "✓ 任务状态更新完成"
+
 # ============================================================================
 # AI Agent Prompt 生成
 # ============================================================================
