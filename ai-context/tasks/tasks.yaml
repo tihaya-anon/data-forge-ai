@@ -236,7 +236,7 @@ DAG配置:
     - 特殊字符处理
 
     '
-  状态: 进行中
+  状态: 已完成
   编号: T-202
   范围:
   - src/pipeline/spark/cleaning/
