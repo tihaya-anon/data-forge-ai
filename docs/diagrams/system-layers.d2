@@ -1,0 +1,149 @@
+# 系统分层架构
+# 展示五层架构的紧凑布局
+
+grid-rows: 5
+
+classes: {
+  layer: {
+    style: {
+      fill: "#f5f5f5"
+      stroke: "#78909c"
+      border-radius: 8
+    }
+    grid-columns: 4
+    grid-gap: 10
+  }
+  component: {
+    width: 200
+  }
+}
+
+title: {
+  label: 系统分层架构
+  near: top-center
+  shape: text
+  style: {
+    font-size: 24
+    bold: true
+    font-color: "#37474f"
+  }
+}
+
+application: "应用层" {
+  class: layer
+
+  rag: "RAG 问答"
+  training: "训练数据"
+  analytics: "数据分析"
+  admin: "管理后台"
+
+  rag.class: component
+  training.class: component
+  analytics.class: component
+  admin.class: component
+}
+
+service: "服务层" {
+  class: layer
+
+  retrieval: "检索服务"
+  embedding: "向量化"
+  pipeline: "数据处理"
+  scheduler: "调度服务"
+
+  retrieval.class: component
+  embedding.class: component
+  pipeline.class: component
+  scheduler.class: component
+}
+
+compute: "计算层" {
+  class: layer
+
+  spark: "Spark\n批处理" {
+    style.fill: "#e8eaf6"
+    class: component
+  }
+  flink: "Flink\n流处理" {
+    style.fill: "#e8eaf6"
+    class: component
+  }
+  ray: "Ray\n分布式ML" {
+    style.fill: "#e8eaf6"
+    class: component
+  }
+  trino: "Trino\n联邦查询" {
+    style.fill: "#e8eaf6"
+    class: component
+  }
+}
+
+storage: "存储层" {
+  class: layer
+
+  paimon: "Paimon\n数据湖" {
+    style.fill: "#c5cae9"
+    class: component
+  }
+  milvus: "Milvus\n向量库" {
+    style.fill: "#c5cae9"
+    class: component
+  }
+  redis: "Redis\n缓存" {
+    style.fill: "#c5cae9"
+    class: component
+  }
+  doris: "Doris\nOLAP" {
+    style.fill: "#c5cae9"
+    class: component
+  }
+}
+
+infra: "基础设施层" {
+  class: layer
+
+  k8s: "Kubernetes\n容器编排" {
+    style.fill: "#9fa8da"
+    class: component
+  }
+  kafka: "Kafka\n消息队列" {
+    style.fill: "#9fa8da"
+    class: component
+  }
+  minio: "MinIO/S3\n对象存储" {
+    style.fill: "#9fa8da"
+    class: component
+  }
+  prometheus: "Prometheus\n监控" {
+    style.fill: "#9fa8da"
+    class: component
+  }
+}
+
+application -> service {
+  style: {
+    stroke: "#78909c"
+    stroke-width: 2
+  }
+}
+
+service -> compute {
+  style: {
+    stroke: "#78909c"
+    stroke-width: 2
+  }
+}
+
+compute -> storage {
+  style: {
+    stroke: "#78909c"
+    stroke-width: 2
+  }
+}
+
+storage -> infra {
+  style: {
+    stroke: "#78909c"
+    stroke-width: 2
+  }
+}

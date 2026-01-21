@@ -1,0 +1,68 @@
+direction: down
+
+title: MinHash 去重流程 {
+  near: top-center
+  shape: text
+  style: {
+    font-size: 20
+    bold: true
+  }
+}
+
+input: 输入文档 {
+  shape: oval
+}
+
+preprocess: 文本预处理\nPreprocessing {
+  shape: rectangle
+  details: |md
+    • 分词 (jieba/nltk)
+    • 去停用词
+    • N-gram 生成 (n=5)
+  |
+}
+
+minhash: MinHash 签名\nSignature {
+  shape: rectangle
+  details: |md
+    • 128 permutations
+    • 生成 128 维签名向量
+  |
+}
+
+lsh: LSH 分桶\nLocality Sensitive Hash {
+  shape: rectangle
+  details: |md
+    • bands = 32, rows = 4
+    • 相似度阈值 ≈ 0.8
+    • 候选对生成
+  |
+}
+
+verify: 相似度验证\nVerification {
+  shape: rectangle
+  details: |md
+    • Jaccard 相似度计算
+    • 阈值过滤 (>0.8 为重复)
+  |
+}
+
+connected: 连通分量\nConnected Components {
+  shape: rectangle
+  details: |md
+    • Union-Find 算法
+    • 重复文档聚类
+    • 每类保留一个代表
+  |
+}
+
+output: 去重后文档 {
+  shape: oval
+}
+
+input -> preprocess
+preprocess -> minhash
+minhash -> lsh
+lsh -> verify
+verify -> connected
+connected -> output

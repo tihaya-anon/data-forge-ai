@@ -1,0 +1,38 @@
+direction: down
+
+title: RAG 数据流 {
+  near: top-center
+  shape: text
+  style: {
+    font-size: 20
+    bold: true
+  }
+}
+
+realtime: 实时流 (Flink) {
+  shape: rectangle
+  flow: CDC/Webhook → Kafka → Flink ETL → Embedding → Milvus
+  metadata: ↓ Paimon (元数据)
+  latency: 延迟: < 5s
+  style.fill: "#e3f2fd"
+}
+
+batch: 批处理流 (Spark) {
+  shape: rectangle
+  flow: 定时触发 → 全量/增量同步 → Spark处理 → 批量Embedding → Milvus
+  snapshot: ↓ Paimon (快照)
+  frequency: 频率: 每日凌晨
+  style.fill: "#fff3e0"
+}
+
+query_flow: 查询流 {
+  shape: rectangle
+  flow: 用户Query → API Gateway → 检索服务 → Milvus + ES → Rerank
+  llm: ↓ LLM → Response
+  cache: ↓ Redis (缓存)
+  latency: 延迟: P99 < 500ms
+  style.fill: "#f3e5f5"
+}
+
+realtime -> batch: {style.opacity: 0}
+batch -> query_flow: {style.opacity: 0}

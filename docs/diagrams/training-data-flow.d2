@@ -1,0 +1,130 @@
+# 训练数据处理流
+# 展示从原始数据到训练框架的紧凑流程
+
+grid-columns: 2
+grid-gap: 15
+
+title: {
+  label: 训练数据处理流
+  near: top-center
+  shape: text
+  style: {
+    font-size: 24
+    bold: true
+    font-color: "#37474f"
+  }
+}
+
+source: "原始数据源" {
+  shape: cylinder
+  style: {
+    fill: "#e8eaf6"
+    stroke: "#9fa8da"
+  }
+}
+
+kafka: "Kafka 数据缓冲" {
+  shape: queue
+  style: {
+    fill: "#9fa8da"
+    stroke: "#7986cb"
+    font-color: "#fff"
+    bold: true
+  }
+
+  info: {
+    shape: text
+    style: {
+      font-size: 11
+      font-color: "#fff"
+    }
+    label: "Topic: raw-documents\n保留: 7天"
+  }
+}
+
+spark: "Spark 处理 Pipeline" {
+  style: {
+    fill: "#f5f5f5"
+    stroke: "#78909c"
+    border-radius: 8
+  }
+
+  process: {
+    shape: text
+    style.font-size: 11
+    label: "清洗 → 去重 → 质量过滤\nPII脱敏 → 数据增强 → 配比优化"
+  }
+}
+
+storage: "存储层" {
+  style: {
+    fill: "#f5f5f5"
+    stroke: "#78909c"
+    border-radius: 8
+  }
+
+  grid-columns: 3
+  grid-gap: 8
+
+  paimon: "Paimon\n数据湖" {
+    shape: cylinder
+    style.fill: "#c5cae9"
+  }
+
+  doris: "Doris\n质量指标" {
+    shape: cylinder
+    style.fill: "#c5cae9"
+  }
+
+  minio: "MinIO\n原始备份" {
+    shape: cylinder
+    style.fill: "#c5cae9"
+  }
+}
+
+training: "训练框架" {
+  style: {
+    fill: "#9fa8da"
+    stroke: "#7986cb"
+    border-radius: 8
+    font-color: "#fff"
+    bold: true
+  }
+
+  frameworks: {
+    shape: text
+    style: {
+      font-size: 11
+      font-color: "#fff"
+    }
+    label: "Megatron-LM / DeepSpeed\nHuggingFace Trainer"
+  }
+}
+
+source -> kafka: 采集 {
+  style: {
+    stroke: "#78909c"
+    stroke-width: 2
+  }
+}
+
+kafka -> spark: 消费 {
+  style: {
+    stroke: "#78909c"
+    stroke-width: 2
+  }
+}
+
+spark -> storage: 写入 {
+  style: {
+    stroke: "#78909c"
+    stroke-width: 2
+  }
+}
+
+storage -> training: 导出 {
+  style: {
+    stroke: "#78909c"
+    stroke-width: 2
+  }
+}

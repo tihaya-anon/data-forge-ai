@@ -1,0 +1,68 @@
+direction: down
+
+title: RAG 检索架构 {
+  near: top-center
+  shape: text
+  style: {
+    font-size: 20
+    bold: true
+  }
+}
+
+query: 用户查询\n"如何配置 Flink CDC?" {
+  shape: oval
+}
+
+query_process: Query 处理层 {
+  shape: rectangle
+  intent: 意图识别 → 技术问答
+  entity: 实体提取 → Flink, CDC, 配置
+  rewrite: Query 改写 → HyDE 假设文档生成
+  expand: Query 扩展 → 同义词扩展
+}
+
+parallel: 并行检索层 {
+  vector: 向量检索 {
+    shape: rectangle
+    milvus: Milvus
+    index: HNSW Index
+    topk: Top-K: 50
+  }
+
+  sparse: 稀疏检索 {
+    shape: rectangle
+    bm25: BM25/ES
+    inverted: 倒排索引
+    topk: Top-K: 50
+  }
+
+  fusion: RRF 融合\nReciprocal Rank Fusion {
+    shape: rectangle
+  }
+
+  vector -> fusion
+  sparse -> fusion
+}
+
+rerank: Reranker {
+  shape: rectangle
+  model: BGE-Reranker
+  desc: Cross-Encoder 精排
+  topk: Top-K: 10
+}
+
+llm: LLM 生成 {
+  shape: rectangle
+  context: Context + Query → 结构化 Prompt
+  output: 答案 + 引用
+}
+
+response: 最终答案 {
+  shape: oval
+}
+
+query -> query_process
+query_process -> parallel
+parallel -> rerank
+rerank -> llm
+llm -> response
