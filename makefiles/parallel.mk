@@ -164,20 +164,23 @@ parallel-sync: ## 同步所有工作树的更改到主分支（旧版命令，�
 	@printf "$(GREEN)✓ 所有工作树同步完成$(NC)\n"
 
 .PHONY: parallel-fetch
-parallel-fetch: ## 在各工作树分支上同步主分支更改并清理PROMPT文件
-	@echo "正在同步主分支更改到各工作树并清理PROMPT文件..."
+parallel-fetch: ## 将各工作树分支与主分支同步并清理PROMPT文件
+	@echo "正在将各工作树分支与主分支同步并清理PROMPT文件..."
 	@git fetch origin main
 	@for dir in $(WORKTREE_BASE_DIR)*; do \
 		if [ -d "$$dir" ] && [ -d "$$dir/.git" ]; then \
-			echo "处理工作树: $$dir"; \
-			# 同步主分支更改到工作树 \
-			(cd "$$dir" && git fetch origin main && git reset --hard origin/main); \
+			BRANCH_NAME=$$(cd "$$dir" && git rev-parse --abbrev-ref HEAD); \
+			echo "处理分支: $$BRANCH_NAME ($$dir)"; \
+			# 将主分支的更改合并到工作树分支 \
+			cd "$$dir" && git pull .. main --ff-only || { \
+				git fetch .. main && git merge ..main --no-edit || echo "无法合并主分支到 $$BRANCH_NAME"; \
+			}; \
 			# 删除AGENT_*_PROMPT.md文件 \
 			find "$$dir" -maxdepth 1 -name "AGENT_*_PROMPT.md" -type f -delete 2>/dev/null || true; \
-			echo "  已清理PROMPT文件"; \
+			echo "  已清理PROMPT文件并同步主分支更改"; \
 		fi; \
 	done; \
-	echo "✓ 所有工作树已同步主分支并清理PROMPT文件"
+	echo "✓ 所有工作树分支已与主分支同步并清理PROMPT文件"
 
 .PHONY: parallel-delete-all
 parallel-delete-all: ## 删除所有并行工作树
