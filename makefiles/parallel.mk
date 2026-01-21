@@ -166,14 +166,12 @@ parallel-fetch: ## 在各工作树分支上同步主分支更改并清理PROMPT�
 			# 同步主分支更改到工作树 \
 			cd "$$dir" && git fetch origin main && git reset --hard origin/main; \
 			# 删除AGENT_*_PROMPT.md文件 \
-			if [ -f "$$dir/AGENT_*_PROMPT.md" ]; then \
-				rm -f "$$dir"/AGENT_*_PROMPT.md; \
-				echo "$(GREEN)  已删除PROMPT文件$(NC)\n"; \
-			fi; \
+			find "$$dir" -maxdepth 1 -name "AGENT_*_PROMPT.md" -type f -delete 2>/dev/null || true; \
+			printf "$(GREEN)  已清理PROMPT文件$(NC)\n"; \
 			# 返回主目录 \
 			cd "$(shell pwd)"; \
 		fi; \
-	done;
+	done; \
 	@printf "$(GREEN)✓ 所有工作树已同步主分支并清理PROMPT文件$(NC)\n"
 
 .PHONY: parallel-delete-all
