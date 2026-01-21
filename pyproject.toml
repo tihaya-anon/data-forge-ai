@@ -1,0 +1,65 @@
+[project]
+name = "dataforge-ai"
+version = "0.1.0"
+description = "Enterprise-grade big data AI platform for LLM training and RAG"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "kafka-python>=2.0.2",
+    "pydantic>=2.5.0",
+    "pyyaml>=6.0",
+    "redis>=5.0.0",
+    "pymilvus>=2.3.0",
+    "elasticsearch>=8.11.0",
+    "minio>=7.2.0",
+    "flask>=3.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-asyncio>=0.21.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.7.0",
+]
+
+spark = [
+    "pyspark>=3.5.0",
+]
+
+flink = [
+    "apache-flink>=1.18.0",
+]
+
+rag = [
+    "sentence-transformers>=2.2.0",
+    "langchain>=0.1.0",
+    "openai>=1.0.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --cov=src --cov-report=term-missing"
+
+[tool.black]
+line-length = 100
+target-version = ["py310"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true

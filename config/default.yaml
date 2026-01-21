@@ -1,0 +1,23 @@
+env: development
+debug: true
+
+kafka:
+  bootstrap_servers: "localhost:9092"
+  topic_prefix: "dataforge"
+
+storage:
+  minio_endpoint: "localhost:9000"
+  minio_access_key: "minioadmin"
+  minio_secret_key: "minioadmin123"
+
+redis:
+  host: "localhost"
+  port: 6379
+
+milvus:
+  host: "localhost"
+  port: 19530
+
+elasticsearch:
+  host: "localhost"
+  port: 9200
