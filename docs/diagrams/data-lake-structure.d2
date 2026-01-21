@@ -1,156 +1,143 @@
-# DataForge AI - 数据湖目录结构
-# 展示S3上数据湖的分层存储结构
+# 数据湖目录结构
+# 展示 S3 上数据湖的分层存储结构（紧凑布局）
 
 direction: down
 
 title: {
-  label: Data Lake Directory Structure
+  label: 数据湖目录结构
   near: top-center
   shape: text
   style: {
     font-size: 24
     bold: true
-    font-color: "#2e7d32"
+    font-color: "#37474f"
   }
 }
 
-# ==========================================
-# 根目录
-# ==========================================
 root: "s3://dataforge-lake/" {
   shape: rectangle
   style: {
-    fill: "#e8f5e9"
-    stroke: "#2e7d32"
+    fill: "#9fa8da"
+    stroke: "#7986cb"
+    border-radius: 8
+    bold: true
+    font-color: "#fff"
+  }
+}
+
+training: "training_data/" {
+  style: {
+    fill: "#f5f5f5"
+    stroke: "#78909c"
     border-radius: 8
   }
-}
 
-# ==========================================
-# 训练数据目录
-# ==========================================
-training: "training_data/" {
-  shape: rectangle
-  style: {
-    fill: "#c8e6c9"
-    stroke: "#388e3c"
-  }
-  
+  grid-columns: 2
+  grid-gap: 8
+
   domain_general: "domain=general/" {
-    shape: rectangle
     style: {
-      fill: "#a5d6a7"
+      fill: "#e8eaf6"
+      border-radius: 4
     }
-    
-    date1: "dt=2024-01-01/" {
-      shape: rectangle
-      style: {
-        fill: "#81c784"
-      }
-    }
-    
-    date2: "dt=2024-01-02/" {
-      shape: rectangle
-      style: {
-        fill: "#81c784"
-      }
-    }
-    
-    ellipsis1: "..." {
-      shape: text
-    }
-    
-    domain_general.date1 -> domain_general.date2 -> domain_general.ellipsis1
   }
-  
+
   domain_code: "domain=code/" {
-    shape: rectangle
     style: {
-      fill: "#a5d6a7"
+      fill: "#e8eaf6"
+      border-radius: 4
     }
   }
-  
+
   domain_math: "domain=math/" {
-    shape: rectangle
     style: {
-      fill: "#a5d6a7"
+      fill: "#e8eaf6"
+      border-radius: 4
     }
   }
-  
+
   domain_instruction: "domain=instruction/" {
-    shape: rectangle
     style: {
-      fill: "#a5d6a7"
+      fill: "#e8eaf6"
+      border-radius: 4
     }
   }
-  
-  training.domain_general -> training.domain_code -> training.domain_math -> training.domain_instruction
 }
 
-# ==========================================
-# 知识库目录
-# ==========================================
 knowledge: "knowledge_base/" {
-  shape: rectangle
   style: {
-    fill: "#c8e6c9"
-    stroke: "#388e3c"
+    fill: "#f5f5f5"
+    stroke: "#78909c"
+    border-radius: 8
   }
-  
+
+  grid-columns: 3
+  grid-gap: 8
+
   source_confluence: "source=confluence/" {
-    shape: rectangle
     style: {
-      fill: "#a5d6a7"
+      fill: "#e8eaf6"
+      border-radius: 4
     }
   }
-  
+
   source_git: "source=git/" {
-    shape: rectangle
     style: {
-      fill: "#a5d6a7"
+      fill: "#e8eaf6"
+      border-radius: 4
     }
   }
-  
+
   source_docs: "source=docs/" {
-    shape: rectangle
     style: {
-      fill: "#a5d6a7"
+      fill: "#e8eaf6"
+      border-radius: 4
     }
   }
-  
-  knowledge.source_confluence -> knowledge.source_git -> knowledge.source_docs
 }
 
-# ==========================================
-# 元数据目录
-# ==========================================
 metadata: "metadata/" {
-  shape: rectangle
   style: {
-    fill: "#c8e6c9"
-    stroke: "#388e3c"
+    fill: "#f5f5f5"
+    stroke: "#78909c"
+    border-radius: 8
   }
-  
+
+  grid-columns: 2
+  grid-gap: 8
+
   data_quality: "data_quality/" {
-    shape: rectangle
     style: {
-      fill: "#a5d6a7"
+      fill: "#e8eaf6"
+      border-radius: 4
     }
   }
-  
+
   lineage: "lineage/" {
-    shape: rectangle
     style: {
-      fill: "#a5d6a7"
+      fill: "#e8eaf6"
+      border-radius: 4
     }
   }
-  
-  metadata.data_quality -> metadata.lineage
 }
 
-# ==========================================
-# 连接关系
-# ==========================================
-root -> training
-root -> knowledge
-root -> metadata
+root -> training {
+  style: {
+    stroke: "#78909c"
+    stroke-width: 2
+  }
+}
+
+root -> knowledge {
+  style: {
+    stroke: "#78909c"
+    stroke-width: 2
+  }
+}
+
+root -> metadata {
+  style: {
+    stroke: "#78909c"
+    stroke-width: 2
+  }
+}

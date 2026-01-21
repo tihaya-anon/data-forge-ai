@@ -1,259 +1,220 @@
 # MinHash 去重算法流程
-# 展示 MinHash + LSH 去重的详细步骤（正方形布局）
+# 展示 MinHash + LSH 去重的详细步骤
 
 grid-columns: 2
+grid-gap: 20
+
+classes: {
+  stage: {
+    style: {
+      fill: "#f5f5f5"
+      stroke: "#78909c"
+      border-radius: 8
+    }
+  }
+}
 
 title: {
-  label: MinHash Deduplication Algorithm
+  label: MinHash 去重算法
   near: top-center
   shape: text
   style: {
     font-size: 24
     bold: true
-    font-color: "#2e7d32"
+    font-color: "#37474f"
   }
 }
 
-# ==========================================
-# 左上：输入 + 预处理
-# ==========================================
-input-preprocess: "1. Input & Preprocessing" {
-  style: {
-    fill: "#fff3e0"
-    stroke: "#e65100"
-    border-radius: 8
-  }
-  
+input-preprocess: "1. 输入与预处理" {
+  class: stage
   grid-columns: 2
-  grid-gap: 0
-  
-  input: "Input Documents" {
+  grid-gap: 10
+
+  input: "输入文档" {
     shape: document
     style: {
-      fill: "#e3f2fd"
-      stroke: "#1565c0"
+      fill: "#e8eaf6"
+      stroke: "#9fa8da"
     }
-    label: "10B docs"
+    label: "10亿文档"
   }
-  
-  tokenize: "Tokenize" {
-    style.fill: "#ffe0b2"
-    label: "jieba / nltk"
-  }
-  
-  stopword: "Stopwords" {
-    style.fill: "#ffcc80"
-    label: "Remove"
-  }
-  
-  ngram: "N-gram" {
-    style.fill: "#ffb74d"
-    label: "n = 5"
-  }
-  
+
+  tokenize: "分词 jieba/nltk"
+  stopword: "去停用词"
+  ngram: "N-gram n=5"
+
   input -> tokenize -> stopword -> ngram
 }
 
-# ==========================================
-# 右上：MinHash 签名
-# ==========================================
-minhash: "2. MinHash Signature" {
-  style: {
-    fill: "#e8f5e9"
-    stroke: "#2e7d32"
-    border-radius: 8
-  }
-  
+minhash: "2. MinHash 签名" {
+  class: stage
   grid-columns: 1
-  grid-gap: 0
-  
-  hash-funcs: "128 Hash Functions" {
-    style.fill: "#a5d6a7"
+  grid-gap: 10
+
+  hash-funcs: "128 个哈希函数" {
+    style.fill: "#e8eaf6"
     label: "h1, h2, ..., h128"
   }
-  
-  compute: "Compute MinHash" {
+
+  compute: "计算 MinHash" {
     style: {
-      fill: "#66bb6a"
-      font-color: "#fff"
+      fill: "#c5cae9"
+      font-color: "#000"
     }
-    label: "For each h:\nmin(h(shingle))"
+    label: "对每个 h:\nmin(h(shingle))"
   }
-  
-  signature: "Signature Vector" {
+
+  signature: "签名向量" {
     style: {
-      fill: "#43a047"
+      fill: "#9fa8da"
       font-color: "#fff"
       bold: true
     }
     label: "[m1, m2, ..., m128]"
   }
-  
+
   hash-funcs -> compute -> signature
 }
 
-# ==========================================
-# 左中：LSH 分桶
-# ==========================================
-lsh: "3. LSH Banding" {
-  style: {
-    fill: "#e0f7fa"
-    stroke: "#00838f"
-    border-radius: 8
-  }
-  
+lsh: "3. LSH 分桶" {
+  class: stage
   grid-columns: 1
-  grid-gap: 0
-  
-  config: "Configuration" {
-    style.fill: "#80deea"
+  grid-gap: 10
+
+  config: "配置参数" {
+    style.fill: "#e8eaf6"
     label: "32 bands × 4 rows = 128"
   }
-  
-  band: "Band Hashing" {
+
+  band: "分桶哈希" {
     style: {
-      fill: "#26c6da"
-      font-color: "#fff"
+      fill: "#c5cae9"
+      font-color: "#000"
     }
     label: "hash(4 rows) → bucket_id"
   }
-  
-  buckets: "Hash Buckets" {
+
+  buckets: "哈希桶" {
     style: {
-      fill: "#00acc1"
+      fill: "#9fa8da"
       font-color: "#fff"
       bold: true
     }
-    label: "Same bucket = candidates"
+    label: "同桶 = 候选对"
   }
-  
+
   config -> band -> buckets
 }
 
-# ==========================================
-# 右中：候选对 + 验证
-# ==========================================
-verify: "4. Verification" {
-  style: {
-    fill: "#fce4ec"
-    stroke: "#c2185b"
-    border-radius: 8
-  }
-  
+verify: "4. 相似度验证" {
+  class: stage
   grid-columns: 1
-  grid-gap: 0
-  
-  pairs: "Candidate Pairs" {
-    style.fill: "#f8bbd9"
-    label: "From same bucket"
+  grid-gap: 10
+
+  pairs: "候选对" {
+    style.fill: "#e8eaf6"
+    label: "来自同一桶"
   }
-  
-  jaccard: "Jaccard Similarity" {
-    style.fill: "#f48fb1"
+
+  jaccard: "Jaccard 相似度" {
+    style.fill: "#e8eaf6"
     label: "J(A,B) = |A∩B| / |A∪B|"
   }
-  
-  threshold: "Threshold Check" {
+
+  threshold: "阈值检查" {
     style: {
-      fill: "#ec407a"
-      font-color: "#fff"
+      fill: "#c5cae9"
+      font-color: "#000"
       bold: true
     }
-    label: "sim > 0.8 → Duplicate!"
+    label: "相似度 > 0.8 → 重复"
   }
-  
+
   pairs -> jaccard -> threshold
 }
 
-# ==========================================
-# 左下：聚类
-# ==========================================
-cluster: "5. Clustering" {
-  style: {
-    fill: "#fff8e1"
-    stroke: "#f9a825"
-    border-radius: 8
-  }
-  
+cluster: "5. 聚类去重" {
+  class: stage
   grid-columns: 1
-  grid-gap: 0
-  
-  union-find: "Union-Find" {
+  grid-gap: 10
+
+  union-find: "Union-Find 算法" {
     style: {
-      fill: "#ffca28"
+      fill: "#c5cae9"
       font-color: "#000"
     }
-    label: "Group all duplicates"
+    label: "合并所有重复文档"
   }
-  
-  select: "Select Representative" {
+
+  select: "选择代表" {
     style: {
-      fill: "#ffa000"
+      fill: "#9fa8da"
       font-color: "#fff"
       bold: true
     }
-    label: "Keep 1 doc per cluster"
+    label: "每簇保留 1 个文档"
   }
-  
+
   union-find -> select
 }
 
-# ==========================================
-# 右下：输出 + 优化
-# ==========================================
-output-tips: "6. Output & Optimizations" {
-  style: {
-    fill: "#e8eaf6"
-    stroke: "#3f51b5"
-    border-radius: 8
-  }
-  
+output-tips: "6. 输出与优化" {
+  class: stage
   grid-columns: 1
-  grid-gap: 0
-  
-  output: "Deduplicated Docs" {
+  grid-gap: 10
+
+  output: "去重后文档" {
     shape: document
     style: {
-      fill: "#c8e6c9"
-      stroke: "#2e7d32"
+      fill: "#7986cb"
+      stroke: "#5c6bc0"
       bold: true
+      font-color: "#fff"
     }
-    label: "Unique docs only"
+    label: "仅保留唯一文档"
   }
-  
-  tips: "Spark Optimizations" {
+
+  tips: {
+    shape: text
     style: {
-      fill: "#ffebee"
-      stroke: "#c62828"
+      font-size: 11
+      font-color: "#616161"
     }
-    label: "Bucketing | Broadcast | Salting\n10B docs in 4h | Precision 98%+"
+    label: "Spark 优化: 分桶 | 广播 | 加盐\n10亿文档 4小时 | 精度 98%+"
   }
 }
 
-# ==========================================
-# 连接
-# ==========================================
 input-preprocess -> minhash {
-  style.stroke: "#e65100"
-  style.stroke-width: 2
+  style: {
+    stroke: "#78909c"
+    stroke-width: 2
+  }
 }
 
 minhash -> lsh {
-  style.stroke: "#2e7d32"
-  style.stroke-width: 2
+  style: {
+    stroke: "#78909c"
+    stroke-width: 2
+  }
 }
 
 lsh -> verify {
-  style.stroke: "#00838f"
-  style.stroke-width: 2
+  style: {
+    stroke: "#78909c"
+    stroke-width: 2
+  }
 }
 
 verify -> cluster {
-  style.stroke: "#c2185b"
-  style.stroke-width: 2
+  style: {
+    stroke: "#78909c"
+    stroke-width: 2
+  }
 }
 
 cluster -> output-tips {
-  style.stroke: "#f9a825"
-  style.stroke-width: 2
+  style: {
+    stroke: "#78909c"
+    stroke-width: 2
+  }
 }

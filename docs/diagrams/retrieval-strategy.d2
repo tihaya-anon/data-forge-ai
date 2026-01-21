@@ -1,199 +1,190 @@
 # 混合检索策略流程
-# 展示向量检索 + 关键词检索 + Rerank 的完整流程（正方形布局）
+# 展示向量检索 + 关键词检索 + Rerank 的完整流程
 
 grid-columns: 2
+grid-gap: 20
 
 title: {
-  label: Hybrid Retrieval Strategy
+  label: 混合检索策略
   near: top-center
   shape: text
   style: {
     font-size: 24
     bold: true
-    font-color: "#c2185b"
+    font-color: "#37474f"
   }
 }
 
-# ==========================================
-# 左上：用户 + 查询
-# ==========================================
-user-query: "1. User Query" {
+# 左上：用户查询
+user-query: "1. 用户查询" {
   style: {
-    fill: "#fff8e1"
-    stroke: "#f9a825"
+    fill: "#f5f5f5"
+    stroke: "#78909c"
     border-radius: 8
   }
 
   grid-columns: 1
-  grid-gap: 0
+  grid-gap: 10
 
-  user: User {
+  user: 用户 {
     shape: person
     style: {
-      fill: "#ffecb3"
-      stroke: "#ff8f00"
+      fill: "#e8eaf6"
+      stroke: "#9fa8da"
     }
   }
 
-  query: "Query" {
+  query: "查询" {
     shape: parallelogram
     style: {
-      fill: "#ffe082"
-      stroke: "#ffa000"
+      fill: "#c5cae9"
+      stroke: "#9fa8da"
     }
-    label: "How to configure Flink CDC?"
+    label: "如何配置 Flink CDC？"
   }
-  
+
   user -> query
 }
 
-# ==========================================
 # 右上：查询处理
-# ==========================================
-query-process: "2. Query Processing" {
+query-process: "2. 查询处理" {
   style: {
-    fill: "#e3f2fd"
-    stroke: "#1565c0"
+    fill: "#f5f5f5"
+    stroke: "#78909c"
     border-radius: 8
   }
-  
+
   grid-columns: 2
-  grid-gap: 0
-  
-  intent: "Intent" {
-    style.fill: "#90caf9"
-    label: "Tech QA"
+  grid-gap: 10
+
+  intent: "意图识别" {
+    style.fill: "#e8eaf6"
+    label: "技术问答"
   }
-  
-  entity: "Entity" {
-    style.fill: "#64b5f6"
+
+  entity: "实体提取" {
+    style.fill: "#e8eaf6"
     label: "Flink, CDC"
   }
-  
-  hyde: "HyDE" {
+
+  hyde: "HyDE 改写" {
     style: {
-      fill: "#1976d2"
-      font-color: "#fff"
+      fill: "#c5cae9"
+      font-color: "#000"
       bold: true
     }
-    label: "Hypothetical\nDoc"
+    label: "假设文档"
   }
-  
-  expand: "Expand" {
-    style.fill: "#64b5f6"
+
+  expand: "查询扩展" {
+    style.fill: "#e8eaf6"
     label: "+ Debezium"
   }
-  
+
   intent -> entity -> hyde -> expand
 }
 
-# ==========================================
 # 左中：向量检索
-# ==========================================
-vector-search: "3. Vector Search" {
+vector-search: "3. 向量检索" {
   style: {
-    fill: "#fce4ec"
-    stroke: "#e91e63"
+    fill: "#f5f5f5"
+    stroke: "#78909c"
     border-radius: 8
   }
 
   grid-columns: 1
-  grid-gap: 0
+  grid-gap: 10
 
   milvus: Milvus {
     shape: cylinder
     style: {
-      fill: "#00acc1"
+      fill: "#9fa8da"
       font-color: "#fff"
     }
   }
 
-  hnsw: "HNSW Index" {
-    style.fill: "#f48fb1"
+  hnsw: "HNSW 索引" {
+    style.fill: "#e8eaf6"
     label: "ef = 128"
   }
 
-  v-result: "Vector Results" {
-    style.fill: "#f8bbd9"
+  v-result: "向量结果" {
+    style.fill: "#e8eaf6"
     label: "Top-50: [0.92, 0.89, 0.85...]"
   }
 
   milvus -> hnsw -> v-result
 }
 
-# ==========================================
 # 右中：关键词检索
-# ==========================================
-keyword-search: "4. Keyword Search" {
+keyword-search: "4. 关键词检索" {
   style: {
-    fill: "#fce4ec"
-    stroke: "#f06292"
+    fill: "#f5f5f5"
+    stroke: "#78909c"
     border-radius: 8
   }
 
   grid-columns: 1
-  grid-gap: 0
+  grid-gap: 10
 
   es: Elasticsearch {
     shape: cylinder
     style: {
-      fill: "#fdd835"
-      font-color: "#000"
+      fill: "#9fa8da"
+      font-color: "#fff"
     }
   }
 
-  bm25: "BM25 Algorithm" {
-    style.fill: "#f8bbd9"
-    label: "TF-IDF based"
+  bm25: "BM25 算法" {
+    style.fill: "#e8eaf6"
+    label: "基于 TF-IDF"
   }
 
-  k-result: "Keyword Results" {
-    style.fill: "#f8bbd9"
+  k-result: "关键词结果" {
+    style.fill: "#e8eaf6"
     label: "Top-50: [12.5, 11.2, 10.8...]"
   }
 
   es -> bm25 -> k-result
 }
 
-# ==========================================
-# 左下：融合 + Rerank
-# ==========================================
-fusion-rerank: "5. Fusion & Reranking" {
+# 左下：融合与重排
+fusion-rerank: "5. 融合与重排" {
   style: {
-    fill: "#ede7f6"
-    stroke: "#512da8"
+    fill: "#f5f5f5"
+    stroke: "#78909c"
     border-radius: 8
   }
 
   grid-columns: 2
-  grid-gap: 0
+  grid-gap: 10
 
-  rrf: "RRF Fusion" {
+  rrf: "RRF 融合" {
     style: {
-      fill: "#7c4dff"
-      font-color: "#fff"
+      fill: "#c5cae9"
+      font-color: "#000"
       bold: true
     }
     label: "Σ 1/(k+rank)"
   }
 
-  merged: "Merged" {
-    style.fill: "#d1c4e9"
+  merged: "合并结果" {
+    style.fill: "#e8eaf6"
     label: "Top-100"
   }
 
-  reranker: "BGE-Reranker" {
+  reranker: "BGE 重排器" {
     style: {
-      fill: "#43a047"
+      fill: "#9fa8da"
       font-color: "#fff"
       bold: true
     }
     label: "Cross-Encoder"
   }
 
-  final: "Final" {
+  final: "最终结果" {
     style: {
-      fill: "#2e7d32"
+      fill: "#7986cb"
       font-color: "#fff"
       bold: true
     }
@@ -203,77 +194,73 @@ fusion-rerank: "5. Fusion & Reranking" {
   rrf -> merged -> reranker -> final
 }
 
-# ==========================================
-# 右下：LLM生成 + 性能
-# ==========================================
-llm-perf: "6. LLM & Performance" {
+# 右下：LLM生成与性能
+llm-perf: "6. LLM 生成与性能" {
   style: {
-    fill: "#fff3e0"
-    stroke: "#e65100"
+    fill: "#f5f5f5"
+    stroke: "#78909c"
     border-radius: 8
   }
 
   grid-columns: 1
-  grid-gap: 0
+  grid-gap: 10
 
-  generate: "LLM Generate" {
+  generate: "LLM 生成" {
     style: {
-      fill: "#ff9800"
+      fill: "#9fa8da"
       font-color: "#fff"
       bold: true
     }
     label: "GPT-4 / Claude"
   }
 
-  answer: "Answer" {
-    style.fill: "#ffcc80"
-    label: "Response with citations [1][2]"
+  answer: "答案" {
+    style.fill: "#e8eaf6"
+    label: "带引用的回答 [1][2]"
   }
 
-  perf: "Performance Comparison" {
-    style.fill: "#ffecb3"
-    label: "Vector: 85%/20ms | Keyword: 75%/15ms\nHybrid: 92%/35ms | +Rerank: 95%/80ms"
+  perf: "性能对比" {
+    style.fill: "#e8eaf6"
+    label: "向量: 85%/20ms | 关键词: 75%/15ms\n混合: 92%/35ms | +重排: 95%/80ms"
   }
 
   generate -> answer
 }
 
-# ==========================================
 # 连接
-# ==========================================
 user-query -> query-process {
-  style.stroke: "#f9a825"
+  style.stroke: "#78909c"
   style.stroke-width: 2
 }
 
-query-process -> vector-search: Vector {
-  style.stroke: "#c2185b"
+query-process -> vector-search: 向量 {
+  style.stroke: "#78909c"
   style.stroke-width: 2
 }
 
-query-process -> keyword-search: Keywords {
-  style.stroke: "#c2185b"
+query-process -> keyword-search: 关键词 {
+  style.stroke: "#78909c"
   style.stroke-width: 2
 }
 
 vector-search -> fusion-rerank {
-  style.stroke: "#512da8"
+  style.stroke: "#78909c"
   style.stroke-width: 2
 }
 
 keyword-search -> fusion-rerank {
-  style.stroke: "#512da8"
+  style.stroke: "#78909c"
   style.stroke-width: 2
 }
 
 fusion-rerank -> llm-perf {
-  style.stroke: "#2e7d32"
+  style.stroke: "#78909c"
   style.stroke-width: 2
 }
 
-llm-perf.answer -> user-query.user: Response {
+llm-perf.answer -> user-query.user: 响应 {
   style: {
-    stroke: "#e65100"
+    stroke: "#78909c"
     stroke-width: 2
   }
 }

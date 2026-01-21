@@ -1,275 +1,181 @@
 # LLM 训练数据处理 Pipeline
-# 展示从原始数据到训练数据集的完整处理流程（正方形布局）
+# 展示从原始数据到训练数据集的完整处理流程
 
 grid-columns: 2
+grid-gap: 20
+
+classes: {
+  stage: {
+    style: {
+      fill: "#f5f5f5"
+      stroke: "#78909c"
+      border-radius: 8
+    }
+  }
+}
 
 title: {
-  label: LLM Training Data Pipeline
+  label: LLM 训练数据处理流程
   near: top-center
   shape: text
   style: {
     font-size: 24
     bold: true
-    font-color: "#1565c0"
+    font-color: "#37474f"
   }
 }
 
-# ==========================================
-# 左上：原始数据 + 清洗
-# ==========================================
-raw-cleaning: "1. Raw Data & Cleaning" {
-  style: {
-    fill: "#fff3e0"
-    stroke: "#e65100"
-    border-radius: 8
-  }
-  
+raw-cleaning: "1. 原始数据与清洗" {
+  class: stage
   grid-columns: 2
-  grid-gap: 0
-  
-  raw: Raw Data {
+  grid-gap: 10
+
+  raw: "原始数据" {
     shape: document
     style: {
-      fill: "#e3f2fd"
-      stroke: "#1565c0"
+      fill: "#e8eaf6"
+      stroke: "#9fa8da"
     }
-    label: "TB/PB scale"
+    label: "TB/PB 规模"
   }
-  
-  encoding: "Encoding" {
-    style.fill: "#ffe0b2"
-    label: "Normalize"
-  }
-  
-  html: "HTML" {
-    style.fill: "#ffcc80"
-    label: "Remove tags"
-  }
-  
-  special: "Special Char" {
-    style.fill: "#ffb74d"
-    label: "Filter"
-  }
-  
-  lang: "Language" {
-    style.fill: "#ffb74d"
-    label: "Detect"
-  }
-  
-  format: "Format" {
-    style.fill: "#ffa726"
-    label: "Standardize"
-  }
-  
+
+  encoding: "编码规范化"
+  html: "HTML 清理"
+  special: "特殊字符过滤"
+  lang: "语言检测"
+  format: "格式标准化"
+
   raw -> encoding -> html -> special -> lang -> format
 }
 
-# ==========================================
-# 右上：去重
-# ==========================================
-dedup: "2. Deduplication" {
-  style: {
-    fill: "#e8f5e9"
-    stroke: "#2e7d32"
-    border-radius: 8
-  }
-  
+dedup: "2. 去重" {
+  class: stage
   grid-columns: 3
-  grid-gap: 0
-  
-  exact: "Hash" {
+  grid-gap: 10
+
+  exact: "Hash 精确" {
     shape: hexagon
-    style.fill: "#a5d6a7"
-    label: "Exact"
+    style.fill: "#e8eaf6"
   }
-  minhash: "MinHash" {
+  minhash: "MinHash 文档级" {
     shape: hexagon
     style: {
-      fill: "#66bb6a"
+      fill: "#9fa8da"
       font-color: "#fff"
     }
-    label: "Doc-level"
   }
-  simhash: "SimHash" {
+  simhash: "SimHash 段落级" {
     shape: hexagon
-    style.fill: "#a5d6a7"
-    label: "Para-level"
+    style.fill: "#e8eaf6"
   }
-  
-  note: "Performance" {
-    style.fill: "#c8e6c9"
-    label: "10B docs in 4h | Threshold: 0.8"
-    width: 400
+
+  note: {
+    shape: text
+    style: {
+      font-size: 11
+      font-color: "#616161"
+    }
+    label: "10B 文档 4小时 | 阈值: 0.8"
   }
-  
+
   exact -> minhash -> simhash
 }
 
-# ==========================================
-# 左中：质量过滤
-# ==========================================
-quality: "3. Quality Filtering" {
-  style: {
-    fill: "#fce4ec"
-    stroke: "#c2185b"
-    border-radius: 8
-  }
-
+quality: "3. 质量过滤" {
+  class: stage
   grid-columns: 2
-  grid-gap: 0
+  grid-gap: 10
 
-  length: "Length" {
-    style.fill: "#f8bbd9"
-    label: "50-100K tok"
+  length: "长度 50-100K tok"
+  dup-rate: "重复率 < 30%"
+  special-rate: "特殊字符 < 20%"
+  stopword: "停用词 > 10%"
+
+  ppl: "困惑度 < 1000" {
+    style: {
+      fill: "#c5cae9"
+      font-color: "#000"
+    }
   }
-  dup-rate: "Dup Rate" {
-    style.fill: "#f8bbd9"
-    label: "< 30%"
+  toxic: "毒性 < 0.7" {
+    style: {
+      fill: "#c5cae9"
+      font-color: "#000"
+    }
   }
-  special-rate: "Special" {
-    style.fill: "#f48fb1"
-    label: "< 20%"
-  }
-  stopword: "Stopword" {
-    style.fill: "#f48fb1"
-    label: "> 10%"
-  }
-  
-  ppl: "Perplexity" {
-    style.fill: "#ec407a"
-    style.font-color: "#fff"
-    label: "PPL < 1000"
-  }
-  toxic: "Toxicity" {
-    style.fill: "#ec407a"
-    style.font-color: "#fff"
-    label: "< 0.7"
-  }
-  
+
   length -> special-rate -> ppl
   dup-rate -> stopword -> toxic
 }
 
-# ==========================================
-# 右中：PII处理
-# ==========================================
-pii: "4. PII & Safety" {
-  style: {
-    fill: "#ede7f6"
-    stroke: "#512da8"
-    border-radius: 8
-  }
-  
+pii: "4. PII 与安全" {
+  class: stage
   grid-columns: 1
-  grid-gap: 0
-  
-  detect: "PII Detection" {
-    style.fill: "#d1c4e9"
-    label: "Email / Phone / ID Card / Address"
+  grid-gap: 10
+
+  detect: "PII 检测" {
+    style.fill: "#e8eaf6"
+    label: "邮箱/电话/身份证/地址"
   }
 
-  mask: "PII Masking" {
-    style.fill: "#b39ddb"
-    label: "Replace / Hash / Anonymize"
+  mask: "PII 脱敏" {
+    style.fill: "#e8eaf6"
+    label: "替换/哈希/匿名化"
   }
 
-  filter: "Sensitive Filter" {
-    style.fill: "#9575cd"
-    style.font-color: "#fff"
-    label: "Blacklist / Regex patterns"
+  filter: "敏感过滤" {
+    style: {
+      fill: "#c5cae9"
+      font-color: "#000"
+    }
+    label: "黑名单/正则模式"
   }
 
   detect -> mask -> filter
 }
 
-# ==========================================
-# 左下：数据增强
-# ==========================================
-augment: "5. Augmentation" {
-  style: {
-    fill: "#e0f7fa"
-    stroke: "#00838f"
-    border-radius: 8
-  }
-
+augment: "5. 数据增强" {
+  class: stage
   grid-columns: 2
-  grid-gap: 0
+  grid-gap: 10
 
-  self-inst: "Self-Instruct" {
-    style.fill: "#80deea"
-    label: "Generate"
-  }
-  evol-inst: "Evol-Instruct" {
-    style.fill: "#4dd0e1"
-    label: "Evolve"
-  }
-  
-  backtrans: "Back Translate" {
-    style.fill: "#26c6da"
-    label: "Multi-lang"
-  }
-  paraphrase: "Paraphrase" {
-    style.fill: "#00bcd4"
-    label: "Rephrase"
-  }
-  
+  self-inst: "Self-Instruct 生成"
+  evol-inst: "Evol-Instruct 演化"
+  backtrans: "回译 多语言"
+  paraphrase: "改写 重述"
+
   self-inst -> backtrans
   evol-inst -> paraphrase
 }
 
-# ==========================================
-# 右下：配比 + 输出
-# ==========================================
-mixing-output: "6. Mixing & Output" {
-  style: {
-    fill: "#fff8e1"
-    stroke: "#f9a825"
-    border-radius: 8
-  }
-
+mixing-output: "6. 配比与输出" {
+  class: stage
   grid-columns: 5
-  grid-gap: 0
+  grid-gap: 8
 
-  general: "General" {
-    style.fill: "#ffc107"
-    label: "40%"
-  }
-  code: "Code" {
-    style.fill: "#ffca28"
-    label: "25%"
-  }
-  math: "Math" {
-    style.fill: "#ffd54f"
-    label: "10%"
-  }
-  instruct: "Instruct" {
-    style.fill: "#ffe082"
-    label: "15%"
-  }
-  multi-lang: "Multi" {
-    style.fill: "#ffecb3"
-    label: "10%"
-  }
+  general: "通用 40%"
+  code: "代码 25%"
+  math: "数学 10%"
+  instruct: "指令 15%"
+  multi-lang: "多语言 10%"
 
-  curriculum: "Curriculum Learning" {
+  curriculum: "课程学习" {
     style: {
-      fill: "#ffb300"
+      fill: "#9fa8da"
       font-color: "#fff"
       bold: true
     }
-    label: "Difficulty Progression"
-    width: 400
+    label: "难度递进"
   }
 
-  output: Training Dataset {
+  output: "训练数据集" {
     shape: cylinder
     style: {
-      fill: "#c8e6c9"
-      stroke: "#2e7d32"
+      fill: "#7986cb"
+      font-color: "#fff"
       bold: true
     }
-    label: "High-Quality Data"
-    width: 400
+    label: "高质量数据"
   }
 
   general -> curriculum
@@ -280,44 +186,48 @@ mixing-output: "6. Mixing & Output" {
   curriculum -> output
 }
 
-# ==========================================
-# 连接
-# ==========================================
 raw-cleaning -> dedup {
-  style.stroke: "#e65100"
-  style.stroke-width: 2
+  style: {
+    stroke: "#78909c"
+    stroke-width: 2
+  }
 }
 
 dedup -> quality {
-  style.stroke: "#2e7d32"
-  style.stroke-width: 2
+  style: {
+    stroke: "#78909c"
+    stroke-width: 2
+  }
 }
 
 quality -> pii {
-  style.stroke: "#c2185b"
-  style.stroke-width: 2
+  style: {
+    stroke: "#78909c"
+    stroke-width: 2
+  }
 }
 
 pii -> augment {
-  style.stroke: "#512da8"
-  style.stroke-width: 2
+  style: {
+    stroke: "#78909c"
+    stroke-width: 2
+  }
 }
 
 augment -> mixing-output {
-  style.stroke: "#00838f"
-  style.stroke-width: 2
+  style: {
+    stroke: "#78909c"
+    stroke-width: 2
+  }
 }
 
-# ==========================================
-# 指标说明
-# ==========================================
 metrics: {
   shape: text
   near: bottom-center
   style: {
-    font-size: 12
+    font-size: 11
     italic: true
     font-color: "#616161"
   }
-  label: "Daily 50TB+ | Dedup 10B docs in 4h | Filter rate ~30%"
+  label: "日处理 50TB+ | 去重 10B 文档 4小时 | 过滤率 ~30%"
 }
