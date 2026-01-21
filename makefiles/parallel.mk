@@ -171,10 +171,10 @@ parallel-fetch: ## 将各工作树分支与主分支同步并清理PROMPT文件
 		if [ -d "$$dir" ] && [ -d "$$dir/.git" ]; then \
 			BRANCH_NAME=$$(cd "$$dir" && git rev-parse --abbrev-ref HEAD); \
 			echo "处理分支: $$BRANCH_NAME ($$dir)"; \
+			# 获取主分支的最新提交 \
+			LATEST_MAIN=$$(git rev-parse origin/main); \
 			# 将主分支的更改合并到工作树分支 \
-			cd "$$dir" && git pull .. main --ff-only || { \
-				git fetch .. main && git merge ..main --no-edit || echo "无法合并主分支到 $$BRANCH_NAME"; \
-			}; \
+			(cd "$$dir" && git merge "$$LATEST_MAIN" --no-edit || echo "无法合并主分支到 $$BRANCH_NAME"); \
 			# 删除AGENT_*_PROMPT.md文件 \
 			find "$$dir" -maxdepth 1 -name "AGENT_*_PROMPT.md" -type f -delete 2>/dev/null || true; \
 			echo "  已清理PROMPT文件并同步主分支更改"; \
