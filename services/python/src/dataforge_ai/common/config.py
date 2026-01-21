@@ -1,121 +1,51 @@
 """
-DataForge AI 通用配置管理模块
-使用 Pydantic 配置模型进行配置管理
+通用配置模块
+提供全局配置访问功能
 """
-from typing import Optional
+
 import os
-from pathlib import Path
-from pydantic import BaseSettings, Field
+from typing import Any, Dict, Optional
 
 
-class KafkaSettings(BaseSettings):
-    """Kafka 配置设置"""
+def get_config() -> Dict[str, Any]:
+    """
+    获取应用程序配置
     
-    bootstrap_servers: str = Field(
-        default="localhost:9092",
-        env="KAFKA_BOOTSTRAP_SERVERS",
-        description="Kafka 服务器地址列表"
-    )
-    client_id: str = Field(
-        default="dataforge-client",
-        env="KAFKA_CLIENT_ID",
-        description="Kafka 客户端ID"
-    )
-    request_timeout_ms: int = Field(
-        default=30000,
-        env="KAFKA_REQUEST_TIMEOUT_MS",
-        description="请求超时时间(毫秒)"
-    )
-    retry_backoff_ms: int = Field(
-        default=100,
-        env="KAFKA_RETRY_BACKOFF_MS",
-        description="重试间隔(毫秒)"
-    )
-    max_in_flight_requests_per_connection: int = Field(
-        default=5,
-        env="KAFKA_MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION",
-        description="每连接最大并发请求数"
-    )
-
-    class Config:
-        env_prefix = 'KAFKA_'
-
-
-class LoggingSettings(BaseSettings):
-    """日志配置设置"""
+    Returns:
+        包含配置项的字典
+    """
+    config = {}
     
-    level: str = Field(
-        default="INFO",
-        env="LOG_LEVEL",
-        description="日志级别"
-    )
-    format: str = Field(
-        default='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        env="LOG_FORMAT",
-        description="日志格式"
-    )
-    json_format: bool = Field(
-        default=False,
-        env="LOG_JSON_FORMAT",
-        description="是否使用 JSON 格式日志"
-    )
+    # 日志相关配置
+    config["LOG_LEVEL"] = os.getenv("LOG_LEVEL", "INFO")
+    config["SERVICE_NAME"] = os.getenv("SERVICE_NAME", "dataforge_ai")
+    config["LOG_JSON_FORMAT"] = os.getenv("LOG_JSON_FORMAT", "true").lower() == "true"
+    config["LOG_TO_CONSOLE"] = os.getenv("LOG_TO_CONSOLE", "true").lower() == "true"
+    config["LOG_TO_FILE"] = os.getenv("LOG_TO_FILE")
     
-    class Config:
-        env_prefix = 'LOG_'
-
-
-class DatabaseSettings(BaseSettings):
-    """数据库配置设置"""
+    # 指标相关配置
+    config["ENABLE_METRICS"] = os.getenv("ENABLE_METRICS", "true").lower() == "true"
+    config["METRICS_NAMESPACE"] = os.getenv("METRICS_NAMESPACE", "dataforge_ai")
+    config["PROMETHEUS_ENABLED"] = os.getenv("PROMETHEUS_ENABLED", "false").lower() == "true"
     
-    redis_url: str = Field(
-        default="redis://localhost:6379/0",
-        env="REDIS_URL",
-        description="Redis 连接 URL"
-    )
-    milvus_host: str = Field(
-        default="localhost",
-        env="MILVUS_HOST",
-        description="Milvus 服务器主机"
-    )
-    milvus_port: int = Field(
-        default=19530,
-        env="MILVUS_PORT",
-        description="Milvus 服务器端口"
-    )
+    # 服务相关配置
+    config["APP_ENV"] = os.getenv("APP_ENV", "development")
+    config["SERVICE_HOST"] = os.getenv("SERVICE_HOST", "localhost")
+    config["SERVICE_PORT"] = int(os.getenv("SERVICE_PORT", "8000"))
     
-    class Config:
-        env_prefix = 'DB_'
+    return config
 
 
-class Settings(BaseSettings):
-    """综合配置设置"""
+def get_config_value(key: str, default: Any = None) -> Any:
+    """
+    获取单个配置值
     
-    app_name: str = Field(
-        default="DataForge AI",
-        env="APP_NAME",
-        description="应用名称"
-    )
-    environment: str = Field(
-        default="development",
-        env="ENVIRONMENT",
-        description="运行环境"
-    )
-    debug: bool = Field(
-        default=False,
-        env="DEBUG",
-        description="调试模式"
-    )
-    
-    # 子模块配置
-    kafka: KafkaSettings = KafkaSettings()
-    logging: LoggingSettings = LoggingSettings()
-    database: DatabaseSettings = DatabaseSettings()
-
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        case_sensitive = False
-
-
-# 全局设置实例
-settings = Settings()
+    Args:
+        key: 配置键名
+        default: 默认值
+        
+    Returns:
+        配置值，如果不存在则返回默认值
+    """
+    config = get_config()
+    return config.get(key, default)
