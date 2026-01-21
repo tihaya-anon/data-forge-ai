@@ -122,7 +122,7 @@
     名称: "Kafka Producer 高级特性"
     工时: 3
     依赖: ["T-101"]
-    状态: "待处理"
+    状态: "进行中"
     范围:
       - "src/pipeline/kafka/producer/"
       - "tests/pipeline/kafka/producer/"
@@ -153,7 +153,7 @@
     名称: "Kafka Consumer 高级特性"
     工时: 3
     依赖: ["T-103"]
-    状态: "待处理"
+    状态: "进行中"
     范围:
       - "src/pipeline/kafka/consumer/"
       - "tests/pipeline/kafka/consumer/"
@@ -205,7 +205,7 @@
     名称: "Spark 作业框架"
     工时: 4
     依赖: ["T-101", "T-105"]
-    状态: "待处理"
+    状态: "进行中"
     范围:
       - "src/pipeline/spark/base/"
       - "tests/pipeline/spark/"
@@ -265,7 +265,7 @@
     名称: "Flink CDC 作业框架"
     工时: 4
     依赖: ["T-103", "T-105"]
-    状态: "待处理"
+    状态: "进行中"
     范围:
       - "src/pipeline/flink/base/"
       - "tests/pipeline/flink/"
