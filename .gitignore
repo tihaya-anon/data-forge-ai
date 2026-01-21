@@ -70,3 +70,4 @@ data/
 secrets/
 *.pem
 *.key
+services/python/.coverage
