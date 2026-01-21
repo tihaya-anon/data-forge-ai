@@ -1,6 +1,13 @@
 # makefiles/parallel.mk - 任务管理（使用 Git Worktree 并行开发）
 # 任务规划和跟踪命令，支持多AI Agent并行开发
 
+# 颜色定义
+RED := \033[0;31m
+GREEN := \033[0;32m
+YELLOW := \033[0;33m
+CYAN := \033[0;36m
+NC := \033[0m  # No Color
+
 # 任务文件路径
 TASKS_FILE := ai-context/tasks/tasks.yaml
 DAG_SCRIPT := ai-context/scripts/task_dag.py
@@ -158,21 +165,19 @@ parallel-sync: ## 同步所有工作树的更改到主分支（旧版命令，�
 
 .PHONY: parallel-fetch
 parallel-fetch: ## 在各工作树分支上同步主分支更改并清理PROMPT文件
-	@printf "$(CYAN)正在同步主分支更改到各工作树并清理PROMPT文件...$(NC)\n"
+	@echo "正在同步主分支更改到各工作树并清理PROMPT文件..."
 	@git fetch origin main
 	@for dir in $(WORKTREE_BASE_DIR)*; do \
 		if [ -d "$$dir" ] && [ -d "$$dir/.git" ]; then \
-			printf "$(GREEN)处理工作树: $$dir$(NC)\n"; \
+			echo "处理工作树: $$dir"; \
 			# 同步主分支更改到工作树 \
-			cd "$$dir" && git fetch origin main && git reset --hard origin/main; \
+			(cd "$$dir" && git fetch origin main && git reset --hard origin/main); \
 			# 删除AGENT_*_PROMPT.md文件 \
 			find "$$dir" -maxdepth 1 -name "AGENT_*_PROMPT.md" -type f -delete 2>/dev/null || true; \
-			printf "$(GREEN)  已清理PROMPT文件$(NC)\n"; \
-			# 返回主目录 \
-			cd "$(shell pwd)"; \
+			echo "  已清理PROMPT文件"; \
 		fi; \
 	done; \
-	@printf "$(GREEN)✓ 所有工作树已同步主分支并清理PROMPT文件$(NC)\n"
+	echo "✓ 所有工作树已同步主分支并清理PROMPT文件"
 
 .PHONY: parallel-delete-all
 parallel-delete-all: ## 删除所有并行工作树
