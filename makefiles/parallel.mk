@@ -57,6 +57,12 @@ task-edit: ## 编辑任务清单文件
 task-status: ## 显示任务完成进度
 	@python3 $(DAG_SCRIPT) --tasks $(TASKS_FILE) --status
 
+.PHONY: task-mark-in-progress-as-done
+task-mark-in-progress-as-done: ## 将所有"进行中"的任务标记为"已完成"
+	@echo "正在将所有'进行中'的任务标记为'已完成'..."
+	@python3 $(DAG_SCRIPT) --tasks $(TASKS_FILE) --mark-done
+	@echo "✓ 任务状态更新完成"
+
 # ============================================================================
 # AI Agent Prompt 生成
 # ============================================================================

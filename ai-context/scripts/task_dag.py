@@ -406,6 +406,30 @@ def print_analysis_report(tasks: List[dict], analysis: dict, critical_path: Tupl
 # 主函数
 # =============================================================================
 
+def mark_in_progress_as_done(tasks_file_path):
+    """将所有"进行中"的任务标记为"已完成" """
+    import yaml
+    
+    # 读取任务文件
+    with open(tasks_file_path, 'r', encoding='utf-8') as f:
+        data = yaml.safe_load(f)
+
+    # 更新任务状态
+    updated = 0
+    for task in data.get('任务', []):
+        if task.get('状态') == '进行中':
+            task['状态'] = '已完成'
+            print(f"Updated: {task['编号']} - {task['名称']}")
+            updated += 1
+
+    # 写回文件
+    with open(tasks_file_path, 'w', encoding='utf-8') as f:
+        yaml.dump(data, f, default_flow_style=False, allow_unicode=True)
+
+    print(f'\n✅ 总共更新了 {updated} 个任务的状态')
+    return updated
+
+
 def print_next_tasks(tasks: List[dict]):
     """显示下一个可执行的任务"""
     _, reverse, details = build_graph(tasks)
@@ -531,6 +555,8 @@ def main():
                         help='指定生成prompt的任务ID（配合--generate-prompt使用）')
     parser.add_argument('--template', 
                         help='prompt模板文件路径（配合--generate-prompt使用）')
+    parser.add_argument('--mark-done', action='store_true',
+                        help='将所有"进行中"的任务标记为"已完成"')
                         
     args = parser.parse_args()
     
@@ -550,6 +576,11 @@ def main():
     if not tasks:
         print("警告: 没有找到任务定义")
         sys.exit(0)
+
+    # 处理标记完成命令
+    if args.mark_done:
+        mark_in_progress_as_done(args.tasks)
+        return
 
     # 处理生成prompt命令
     if args.generate_prompt:
