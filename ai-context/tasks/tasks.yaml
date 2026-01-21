@@ -256,7 +256,7 @@ DAG配置:
     - 去重结果输出
 
     '
-  状态: 进行中
+  状态: 已完成
   编号: T-203
   范围:
   - src/pipeline/spark/dedup/
