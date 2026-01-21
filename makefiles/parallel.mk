@@ -62,7 +62,7 @@ task-status: ## 显示任务完成进度
 # ============================================================================
 
 .PHONY: generate-agent-prompt
-generate-agent-prompt: ## 为指定任务生成AI代理的prompt (usage: make generate-agent-prompt TASK_ID=T-001 OUTPUT_FILE=output.md)
+generate-agent-prompt: ## 为指定任务生成AI代理的prompt (make generate-agent-prompt TASK_ID=T-001 OUTPUT_FILE=output.md)
 	@if [ -z "$(TASK_ID)" ] || [ -z "$(OUTPUT_FILE)" ]; then \
 		printf "$(RED)错误: 请指定任务ID和输出文件 (usage: make generate-agent-prompt TASK_ID=T-001 OUTPUT_FILE=output.md)$(NC)\n"; \
 		exit 1; \
@@ -75,7 +75,7 @@ generate-agent-prompt: ## 为指定任务生成AI代理的prompt (usage: make ge
 # ============================================================================
 
 .PHONY: parallel-setup
-parallel-setup: ## 创建并行开发工作树 (usage: make parallel-setup AGENTS=3)
+parallel-setup: ## 创建并行开发工作树 (make parallel-setup AGENTS=3)
 	@if [ -z "$(AGENTS)" ]; then \
 		printf "$(RED)错误: 请指定 agent 数量 (usage: make parallel-setup AGENTS=N)$(NC)\n"; \
 		exit 1; \
@@ -93,7 +93,7 @@ parallel-setup: ## 创建并行开发工作树 (usage: make parallel-setup AGENT
 	@printf "$(GREEN)✓ 并行开发环境设置完成$(NC)\n"
 
 .PHONY: generate-agent-prompts
-generate-agent-prompts: ## 为指定任务生成AI代理prompts (usage: make generate-agent-prompts TASKS="T-001,T-002,T-003")
+parallel-gen-prompts: ## 为指定任务生成AI代理prompts (make generate-agent-prompts TASKS="T-001,T-002,T-003")
 	@if [ -z "$(TASKS)" ]; then \
 		printf "$(RED)错误: 请指定任务列表 (usage: make generate-agent-prompts TASKS=T-001,T-002,T-003)$(NC)\n"; \
 		exit 1; \
@@ -121,7 +121,7 @@ generate-agent-prompts: ## 为指定任务生成AI代理prompts (usage: make gen
 	@printf "$(GREEN)✓ 所有prompts已生成并复制到对应工作树$(NC)\n"
 
 .PHONY: parallel-setup-with-prompts
-parallel-setup-with-prompts: ## 创建并行开发环境并生成prompts (usage: make parallel-setup-with-prompts AGENTS=3 TASKS="T-001,T-002,T-003")
+parallel-setup-with-prompts: ## 创建并行开发环境并生成prompts (make parallel-setup-with-prompts AGENTS=3 TASKS="T-001,T-002,T-003")
 	@if [ -z "$(AGENTS)" ] || [ -z "$(TASKS)" ]; then \
 		printf "$(RED)错误: 请指定 agent 数量和任务列表 (usage: make parallel-setup-with-prompts AGENTS=3 TASKS=T-001,T-002,T-003)$(NC)\n"; \
 		exit 1; \
@@ -168,7 +168,7 @@ parallel-fetch: ## 将各工作树分支与主分支同步并清理PROMPT文件
 	@echo "正在将各工作树分支与主分支同步并清理PROMPT文件..."
 	@git fetch origin main
 	@for dir in $(WORKTREE_BASE_DIR)*; do \
-		if [ -d "$$dir" ] && [ -d "$$dir/.git" ]; then \
+		if [ -d "$$dir" ] && [ -f "$$dir/.git" ]; then \
 			BRANCH_NAME=$$(cd "$$dir" && git rev-parse --abbrev-ref HEAD); \
 			echo "处理分支: $$BRANCH_NAME ($$dir)"; \
 			# 获取主分支的最新提交 \
