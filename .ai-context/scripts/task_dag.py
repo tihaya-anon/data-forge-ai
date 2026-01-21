@@ -343,9 +343,110 @@ def print_analysis_report(tasks: List[dict], analysis: dict, critical_path: Tupl
 # 主函数
 # =============================================================================
 
+def print_next_tasks(tasks: List[dict]):
+    """显示下一个可执行的任务"""
+    _, reverse, details = build_graph(tasks)
+
+    available = []
+    for task in tasks:
+        tid = task['编号']
+        status = task.get('状态', '待处理')
+
+        # 跳过已完成或进行中的任务
+        if status in ['已完成', '进行中']:
+            continue
+
+        # 检查依赖是否都已完成
+        deps = reverse.get(tid, [])
+        all_deps_done = all(
+            details[dep].get('状态', '待处理') == '已完成'
+            for dep in deps
+        )
+
+        if all_deps_done:
+            available.append(task)
+
+    if not available:
+        print("\n✅ 没有可执行的任务（所有任务已完成或被阻塞）\n")
+        return
+
+    print("\n" + "=" * 60)
+    print("  下一个可执行的任务")
+    print("=" * 60 + "\n")
+
+    for task in available:
+        print(f"📋 {task['编号']}: {task['名称']}")
+        print(f"   工时: {task.get('工时', '?')} 小时")
+        print(f"   状态: {task.get('状态', '待处理')}")
+        if task.get('范围'):
+            print(f"   范围: {', '.join(task['范围'])}")
+        if task.get('描述'):
+            desc = task['描述'].strip().split('\n')[0]
+            print(f"   描述: {desc}")
+        print()
+
+
+def print_task_list(tasks: List[dict]):
+    """列出所有任务及状态"""
+    levels = compute_levels(tasks)
+
+    print("\n" + "=" * 60)
+    print("  所有任务列表")
+    print("=" * 60 + "\n")
+
+    # 按层级分组
+    level_tasks = defaultdict(list)
+    for task in tasks:
+        level = levels[task['编号']]
+        level_tasks[level].append(task)
+
+    for level in sorted(level_tasks.keys()):
+        print(f"第 {level} 层:")
+        for task in level_tasks[level]:
+            status = task.get('状态', '待处理')
+            status_icon = {
+                '待处理': '⚪',
+                '进行中': '🔵',
+                '已完成': '✅',
+                '已阻塞': '🔴'
+            }.get(status, '⚪')
+
+            print(f"  {status_icon} {task['编号']}: {task['名称']} ({task.get('工时', '?')}h) - {status}")
+        print()
+
+
+def print_status_summary(tasks: List[dict]):
+    """显示任务完成进度"""
+    total = len(tasks)
+    status_count = defaultdict(int)
+    total_hours = 0
+    completed_hours = 0
+
+    for task in tasks:
+        status = task.get('状态', '待处理')
+        status_count[status] += 1
+        hours = task.get('工时', 0) or 0
+        total_hours += hours
+        if status == '已完成':
+            completed_hours += hours
+
+    print("\n" + "=" * 60)
+    print("  任务完成进度")
+    print("=" * 60 + "\n")
+
+    print(f"总任务数: {total}")
+    print(f"  ✅ 已完成: {status_count['已完成']} ({status_count['已完成']/total*100:.1f}%)")
+    print(f"  🔵 进行中: {status_count['进行中']}")
+    print(f"  ⚪ 待处理: {status_count['待处理']}")
+    print(f"  🔴 已阻塞: {status_count['已阻塞']}")
+
+    print(f"\n工时进度: {completed_hours}/{total_hours} 小时 ({completed_hours/total_hours*100:.1f}%)")
+    print()
+
+
 def main():
     import argparse
-    
+
     parser = argparse.ArgumentParser(description='任务 DAG 分析工具')
     parser.add_argument('--tasks', '-t', default='.ai-context/tasks/tasks.yaml',
                         help='任务配置文件路径')
@@ -355,7 +456,13 @@ def main():
                         help='仅分析，不生成 D2 文件')
     parser.add_argument('--generate-only', '-g', action='store_true',
                         help='仅生成 D2 文件，不打印分析')
-    
+    parser.add_argument('--next-tasks', action='store_true',
+                        help='显示下一个可执行的任务')
+    parser.add_argument('--list-all', action='store_true',
+                        help='列出所有任务及状态')
+    parser.add_argument('--status', action='store_true',
+                        help='显示任务完成进度')
+
     args = parser.parse_args()
     
     # 加载数据
@@ -370,30 +477,43 @@ def main():
     
     tasks = data.get('任务', [])
     config = data.get('DAG配置', {})
-    
+
     if not tasks:
         print("警告: 没有找到任务定义")
         sys.exit(0)
-    
+
+    # 处理特殊命令
+    if args.next_tasks:
+        print_next_tasks(tasks)
+        return
+
+    if args.list_all:
+        print_task_list(tasks)
+        return
+
+    if args.status:
+        print_status_summary(tasks)
+        return
+
     # 分析
     analysis = analyze_parallelism(tasks)
     critical_path = find_critical_path(tasks)
     suggestions = suggest_agents(analysis)
-    
+
     # 打印报告
     if not args.generate_only:
         print_analysis_report(tasks, analysis, critical_path, suggestions)
-    
+
     # 生成 D2
     if not args.analyze_only:
         d2_content = generate_d2(tasks, config, analysis)
-        
+
         output_path = Path(args.output)
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        
+
         with open(output_path, 'w', encoding='utf-8') as f:
             f.write(d2_content)
-        
+
         print(f"✅ D2 文件已生成: {output_path}")
         print(f"   运行 'd2 {output_path}' 生成 SVG 图片")
 
