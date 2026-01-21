@@ -130,7 +130,7 @@ docker-wait: ## Wait for all running services to be healthy
 	@printf "$(CYAN)Waiting for services to be healthy...$(NC)\n"
 	@timeout=180; elapsed=0; \
 	while [ $$elapsed -lt $$timeout ]; do \
-		unhealthy=$$($(DC_ALL) ps --format json 2>/dev/null | grep -c '"Health":"starting"\|"Health":"unhealthy"' || echo 0); \
+		unhealthy=$$($(DC_ALL) ps --format json 2>/dev/null | grep -c '"Health":"starting"\|"Health":"unhealthy"' || printf 0); \
 		if [ "$$unhealthy" -eq 0 ]; then \
 			printf "$(GREEN)✓ All services are healthy$(NC)\n"; \
 			exit 0; \

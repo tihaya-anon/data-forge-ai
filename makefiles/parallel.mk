@@ -56,20 +56,20 @@ task-status: ## 显示任务完成进度
 .PHONY: parallel-setup
 parallel-setup: ## 创建并行开发工作树 (usage: make parallel-setup AGENTS=3)
 	@if [ -z "$(AGENTS)" ]; then \
-		echo "$(RED)错误: 请指定 agent 数量 (usage: make parallel-setup AGENTS=N)$(NC)"; \
+		printf "$(RED)错误: 请指定 agent 数量 (usage: make parallel-setup AGENTS=N)$(NC)\n"; \
 		exit 1; \
 	fi
-	@echo "$(CYAN)正在为 $(AGENTS) 个 agent 设置并行开发环境...$(NC)"
+	@printf "$(CYAN)正在为 $(AGENTS) 个 agent 设置并行开发环境...$(NC)\n"
 	for i in $$(seq 1 $(AGENTS)); do \
 		WORKTREE_DIR="$(WORKTREE_BASE_DIR)$${i}"; \
 		if [ -d "$$WORKTREE_DIR" ]; then \
-			echo "$(YELLOW)警告: $$WORKTREE_DIR 已存在，跳过创建$(NC)"; \
+			printf "$(YELLOW)警告: $$WORKTREE_DIR 已存在，跳过创建$(NC)\n"; \
 		else \
-			echo "$(GREEN)创建工作树: $$WORKTREE_DIR$(NC)"; \
+			printf "$(GREEN)创建工作树: $$WORKTREE_DIR$(NC)\n"; \
 			git worktree add "$$WORKTREE_DIR" -b "agent-$${i}-branch" || exit 1; \
 		fi; \
 	done
-	@echo "$(GREEN)✓ 并行开发环境设置完成$(NC)"
+	@printf "$(GREEN)✓ 并行开发环境设置完成$(NC)\n"
 
 .PHONY: parallel-status
 parallel-status: ## 查看工作树状态
@@ -77,36 +77,50 @@ parallel-status: ## 查看工作树状态
 	@git worktree list
 
 .PHONY: parallel-sync
-parallel-sync: ## 同步所有工作树的更改
-	@echo "$(CYAN)正在同步所有工作树更改...$(NC)"
+parallel-sync: ## 同步所有工作树的更改到主分支
+	@printf "$(CYAN)正在同步所有工作树更改到主分支...$(NC)\n"
 	@for dir in $(WORKTREE_BASE_DIR)*; do \
 		if [ -d "$$dir" ] && [ -d "$$dir/.git" ]; then \
-			echo "$(GREEN)同步 $$dir$(NC)"; \
-			cd "$$dir" && git add . && git commit -m "Sync changes" 2>/dev/null || echo "No changes to commit in $$dir"; \
-			git checkout $(MAIN_BRANCH) && git pull origin $(MAIN_BRANCH); \
-			cd - > /dev/null; \
+			BRANCH_NAME=$$(cd "$$dir" && git rev-parse --abbrev-ref HEAD); \
+			printf "$(GREEN)处理工作树 $$BRANCH_NAME ($$dir)$(NC)\n"; \
+			# 检查工作树中是否有更改 \
+			if ! (cd "$$dir" && git diff --quiet $(TASKS_FILE)); then \
+				printf "$(GREEN)  发现 $(TASKS_FILE) 的更改，正在合并到主分支$(NC)\n"; \
+				# 将更改复制到主分支 \
+				cp "$$dir/$(TASKS_FILE)" "./$(TASKS_FILE)"; \
+			else \
+				printf "$(YELLOW)  未发现 $(TASKS_FILE) 的更改$(NC)\n"; \
+			fi; \
 		fi; \
-	done
-	@echo "$(GREEN)✓ 所有工作树同步完成$(NC)"
-
+	done; \
+	# 添加并提交更改 \
+	if ! git diff --quiet $(TASKS_FILE); then \
+		git add $(TASKS_FILE) && \
+		git commit -m "Sync task statuses from agent worktrees"; \
+		printf "$(GREEN)✓ 已提交任务状态更新$(NC)\n"; \
+	else \
+		printf "$(YELLOW)没有需要提交的更改$(NC)\n"; \
+	fi
+	@printf "$(GREEN)✓ 所有工作树同步完成$(NC)\n"
 .PHONY: parallel-delete-all
 parallel-delete-all: ## 删除所有并行工作树
-	@echo "$(CYAN)正在删除所有并行工作树...$(NC)"
+	@printf "$(CYAN)正在删除所有并行工作树...$(NC)\n"
 	@git worktree list --porcelain | grep worktree | cut -d' ' -f2 | while read worktree; do \
 		if [[ "$$worktree" =~ agent-workspace- ]]; then \
-			echo "$(RED)删除工作树: $$worktree$(NC)"; \
+			printf "$(RED)删除工作树: $$worktree$(NC)\n"; \
 			git worktree remove --force "$$worktree"; \
 		fi; \
 	done
-	@echo "$(GREEN)✓ 所有并行工作树已删除$(NC)"
+	@git branch -D $$(git branch | grep -P 'agent-\d+-branch')
+	@printf "$(GREEN)✓ 所有并行工作树已删除$(NC)\n"
 
 .PHONY: parallel-delete-unused
 parallel-delete-unused: ## 删除未使用的工作树
-	@echo "$(CYAN)正在删除未使用的工作树...$(NC)"
+	@printf "$(CYAN)正在删除未使用的工作树...$(NC)\n"
 	@git worktree list --porcelain | grep worktree | cut -d' ' -f2 | while read worktree; do \
 		if [[ "$$worktree" =~ agent-workspace- ]] && [ ! -d "$$worktree" ]; then \
-			echo "$(RED)删除损坏的工作树引用: $$worktree$(NC)"; \
+			printf "$(RED)删除损坏的工作树引用: $$worktree$(NC)\n"; \
 			git worktree remove --force "$$worktree" 2>/dev/null || true; \
 		fi; \
 	done
-	@echo "$(GREEN)✓ 未使用的工作树清理完成$(NC)"
+	@printf "$(GREEN)✓ 未使用的工作树清理完成$(NC)\n"

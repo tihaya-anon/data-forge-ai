@@ -37,10 +37,10 @@ diagrams-clean: ## Remove all generated diagram images
 
 diagrams-list: ## List all diagram source files and generated images
 	@printf "$(CYAN)D2 source files:$(NC)\n"
-	@ls -1 $(DIAGRAMS_SRC_DIR)/*.d2 2>/dev/null | sed 's/^/  /' || echo "  (none)"
+	@ls -1 $(DIAGRAMS_SRC_DIR)/*.d2 2>/dev/null | sed 's/^/  /' || printf "  (none)"
 	@printf "\n"
 	@printf "$(CYAN)Generated images:$(NC)\n"
-	@ls -1 $(DIAGRAMS_OUT_DIR)/*.svg $(DIAGRAMS_OUT_DIR)/*.png 2>/dev/null | sed 's/^/  /' || echo "  (none)"
+	@ls -1 $(DIAGRAMS_OUT_DIR)/*.svg $(DIAGRAMS_OUT_DIR)/*.png 2>/dev/null | sed 's/^/  /' || printf "  (none)"
 
 diagrams-watch: ## Watch for changes and auto-regenerate diagrams
 	@printf "$(CYAN)Watching for diagram changes... (Ctrl+C to stop)$(NC)\n"
@@ -60,7 +60,7 @@ diagrams-docker: ## Generate diagrams using Docker (no local D2 required)
 	@docker run --rm -v $(PWD):/workspace -w /workspace terrastruct/d2:latest \
 		sh -c 'for f in $(DIAGRAMS_SRC_DIR)/*.d2; do \
 			name=$$(basename $$f .d2); \
-			echo "Generating $$name.svg..."; \
+			printf "Generating $$name.svg..."; \
 			d2 --theme=$(D2_THEME) --layout=$(D2_LAYOUT) --pad=$(D2_PAD) $$f $(DIAGRAMS_OUT_DIR)/$$name.svg; \
 		done'
 	@printf "$(GREEN)✓ All diagrams generated with Docker!$(NC)\n"
