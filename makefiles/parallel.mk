@@ -5,6 +5,7 @@
 TASKS_FILE := ai-context/tasks/tasks.yaml
 DAG_SCRIPT := ai-context/scripts/task_dag.py
 DAG_OUTPUT := docs/diagrams/task-dag.d2
+TEMPLATE_FILE := ai-context/templates/prompt-template.md
 
 # 工作树相关变量
 WORKTREE_BASE_DIR ?= $(shell pwd)/../agent-workspace-
@@ -50,16 +51,46 @@ task-status: ## 显示任务完成进度
 	@python3 $(DAG_SCRIPT) --tasks $(TASKS_FILE) --status
 
 # ============================================================================
+# AI Agent Prompt 生成
+# ============================================================================
+
+.PHONY: generate-agent-prompt
+generate-agent-prompt: ## 为指定任务生成AI代理的prompt (usage: make generate-agent-prompt TASK_ID=T-001 OUTPUT_FILE=output.md)
+	@if [ -z "$(TASK_ID)" ] || [ -z "$(OUTPUT_FILE)" ]; then \
+		printf "$(RED)错误: 请指定任务ID和输出文件 (usage: make generate-agent-prompt TASK_ID=T-001 OUTPUT_FILE=output.md)$(NC)\n"; \
+		exit 1; \
+	fi
+	@printf "$(CYAN)正在为任务 $(TASK_ID) 生成AI代理prompt...$(NC)\n"
+	@python3 $(DAG_SCRIPT) --tasks $(TASKS_FILE) --generate-prompt --task-id $(TASK_ID) --template $(TEMPLATE_FILE) --output $(OUTPUT_FILE)
+
+# ============================================================================
 # Git Worktree 并行开发
 # ============================================================================
 
 .PHONY: parallel-setup
-parallel-setup: ## 创建并行开发工作树 (usage: make parallel-setup AGENTS=3)
+parallel-setup: ## 创建并行开发工作树 (usage: make parallel-setup AGENTS=3 TASKS="T-001,T-002,T-003")
 	@if [ -z "$(AGENTS)" ]; then \
 		printf "$(RED)错误: 请指定 agent 数量 (usage: make parallel-setup AGENTS=N)$(NC)\n"; \
 		exit 1; \
 	fi
 	@printf "$(CYAN)正在为 $(AGENTS) 个 agent 设置并行开发环境...$(NC)\n"
+	# 如果提供了TASKS参数，则为每个任务生成对应的prompt
+	if [ -n "$(TASKS)" ]; then \
+		printf "$(CYAN)为指定任务生成AI代理prompt...$(NC)\n"; \
+		TASK_LIST=$$(echo $(TASKS) | tr ',' '\n'); \
+		i=1; \
+		for task_id in $$TASK_LIST; do \
+			if [ $$i -le $(AGENTS) ]; then \
+				OUTPUT_PROMPT_FILE="AGENT_$${i}_PROMPT.md"; \
+				make generate-agent-prompt TASK_ID=$$task_id OUTPUT_FILE=$$OUTPUT_PROMPT_FILE || { \
+					printf "$(RED)生成任务 $$task_id 的prompt失败$(NC)\n"; \
+					exit 1; \
+				}; \
+				printf "$(GREEN)任务 $$task_id 的prompt已保存至 $$OUTPUT_PROMPT_FILE$(NC)\n"; \
+				i=$$((i+1)); \
+			fi; \
+		done; \
+	fi
 	for i in $$(seq 1 $(AGENTS)); do \
 		WORKTREE_DIR="$(WORKTREE_BASE_DIR)$${i}"; \
 		if [ -d "$$WORKTREE_DIR" ]; then \
@@ -67,6 +98,11 @@ parallel-setup: ## 创建并行开发工作树 (usage: make parallel-setup AGENT
 		else \
 			printf "$(GREEN)创建工作树: $$WORKTREE_DIR$(NC)\n"; \
 			git worktree add "$$WORKTREE_DIR" -b "agent-$${i}-branch" || exit 1; \
+			# 将生成的prompt文件复制到工作树目录 \
+			if [ -f "AGENT_$${i}_PROMPT.md" ]; then \
+				cp "AGENT_$${i}_PROMPT.md" "$$WORKTREE_DIR/" ; \
+				printf "$(GREEN)已将AGENT_$${i}_PROMPT.md复制到工作树$$WORKTREE_DIR$(NC)\n"; \
+			fi; \
 		fi; \
 	done
 	@printf "$(GREEN)✓ 并行开发环境设置完成$(NC)\n"

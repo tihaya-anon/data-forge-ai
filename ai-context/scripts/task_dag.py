@@ -7,6 +7,7 @@
 2. 生成 D2 格式的可视化 DAG
 3. 分析并行度、关键路径
 4. 给出 agent 数量建议
+5. 为特定任务生成AI代理prompt
 """
 
 import yaml
@@ -285,6 +286,68 @@ def generate_d2(tasks: List[dict], config: dict, analysis: dict) -> str:
 
 
 # =============================================================================
+# AI Agent Prompt 生成
+# =============================================================================
+
+def load_template(template_path: str) -> str:
+    """加载prompt模板"""
+    with open(template_path, 'r', encoding='utf-8') as f:
+        return f.read()
+
+
+def generate_agent_prompt_for_task(task: dict, template: str) -> str:
+    """为特定任务生成AI代理prompt"""
+    # 替换模板中的占位符
+    prompt = template.replace('[TASK_ID]', task['编号'])
+    prompt = prompt.replace('[TASK_NAME]', task['名称'])
+    prompt = prompt.replace('[TASK_DURATION]', str(task.get('工时', '?')))
+    prompt = prompt.replace('[TASK_DEPENDENCIES]', ', '.join(task.get('依赖', ['无'])))
+    prompt = prompt.replace('[TASK_STATUS]', task.get('状态', '待处理'))
+    prompt = prompt.replace('[TASK_SCOPE]', ', '.join(task.get('范围', ['无指定'])))
+    
+    # 处理描述，保持格式
+    description = task.get('描述', '无详细描述')
+    if isinstance(description, list):
+        description = '\n'.join(description)
+    prompt = prompt.replace('[TASK_DESCRIPTION]', description.strip())
+    
+    return prompt
+
+
+def generate_prompt_for_task(tasks: List[dict], task_id: str, template_path: str, output_path: str):
+    """生成指定任务的AI代理prompt"""
+    # 查找任务
+    target_task = None
+    for task in tasks:
+        if task['编号'] == task_id:
+            target_task = task
+            break
+    
+    if not target_task:
+        print(f"错误: 找不到任务 {task_id}")
+        sys.exit(1)
+    
+    # 加载模板
+    try:
+        template = load_template(template_path)
+    except FileNotFoundError:
+        print(f"错误: 找不到模板文件 {template_path}")
+        sys.exit(1)
+    
+    # 生成prompt
+    prompt = generate_agent_prompt_for_task(target_task, template)
+    
+    # 保存到文件
+    output_path_obj = Path(output_path)
+    output_path_obj.parent.mkdir(parents=True, exist_ok=True)
+    
+    with open(output_path_obj, 'w', encoding='utf-8') as f:
+        f.write(prompt)
+    
+    print(f"✅ AI代理prompt已生成: {output_path_obj}")
+
+
+# =============================================================================
 # 报告生成
 # =============================================================================
 
@@ -462,7 +525,13 @@ def main():
                         help='列出所有任务及状态')
     parser.add_argument('--status', action='store_true',
                         help='显示任务完成进度')
-
+    parser.add_argument('--generate-prompt', action='store_true',
+                        help='生成AI代理prompt')
+    parser.add_argument('--task-id', 
+                        help='指定生成prompt的任务ID（配合--generate-prompt使用）')
+    parser.add_argument('--template', 
+                        help='prompt模板文件路径（配合--generate-prompt使用）')
+                        
     args = parser.parse_args()
     
     # 加载数据
@@ -481,6 +550,18 @@ def main():
     if not tasks:
         print("警告: 没有找到任务定义")
         sys.exit(0)
+
+    # 处理生成prompt命令
+    if args.generate_prompt:
+        if not args.task_id:
+            print("错误: --generate-prompt 需要 --task-id 参数")
+            sys.exit(1)
+        if not args.template:
+            print("错误: --generate-prompt 需要 --template 参数")
+            sys.exit(1)
+        
+        generate_prompt_for_task(tasks, args.task_id, args.template, args.output)
+        return
 
     # 处理特殊命令
     if args.next_tasks:
