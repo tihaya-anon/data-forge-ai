@@ -19,7 +19,7 @@ See [docs/TECH_STACK.md](docs/TECH_STACK.md) for detailed technology decisions.
 
 ## Development Workflow
 
-**CRITICAL**: Read [.ai-context/DEVELOPMENT_WORKFLOW.md](.ai-context/DEVELOPMENT_WORKFLOW.md) before starting any task.
+**CRITICAL**: Read [ai-context/DEVELOPMENT_WORKFLOW.md](ai-context/DEVELOPMENT_WORKFLOW.md) before starting any task.
 
 ### Key Principles
 
@@ -46,7 +46,7 @@ make task-next
 make deploy-test
 make smoke-test
 
-# 5. Update task status in .ai-context/tasks/tasks.yaml
+# 5. Update task status in ai-context/tasks/tasks.yaml
 # 状态: 待处理 -> 已完成
 
 # 6. Commit
@@ -181,8 +181,8 @@ When services are running:
 
 - [Development Environment](docs/DEVELOPMENT.md)
 - [Technology Stack](docs/TECH_STACK.md)
-- [Development Workflow](.ai-context/DEVELOPMENT_WORKFLOW.md)
-- [Task Management](.ai-context/PARALLEL_DEV.md)
+- [Development Workflow](ai-context/DEVELOPMENT_WORKFLOW.md)
+- [Task Management](ai-context/PARALLEL_DEV.md)
 - [Architecture](docs/ARCHITECTURE.md)
 
 

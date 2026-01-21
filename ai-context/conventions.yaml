@@ -47,7 +47,7 @@
     简历: docs/RESUME_DESCRIPTION.md
     图表源码: docs/diagrams/*.d2
     图表输出: docs/images/*.svg
-  AI上下文: .ai-context/
+  AI上下文: ai-context/
 
 代码规范:
   makefile:

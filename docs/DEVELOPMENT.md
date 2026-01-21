@@ -67,12 +67,12 @@ The project uses `uv` for dependency management. Key features:
 
 Available service profiles:
 
-| Profile | Services | Use Case |
-|---------|----------|----------|
-| `minimal` | Kafka, Redis | Quick testing |
-| `rag` | + Milvus, Elasticsearch, MinIO | RAG development |
-| `pipeline` | + Spark, Flink, MinIO | Data pipeline development |
-| `monitoring` | Prometheus, Grafana | Monitoring setup |
+| Profile      | Services                       | Use Case                  |
+| ------------ | ------------------------------ | ------------------------- |
+| `minimal`    | Kafka, Redis                   | Quick testing             |
+| `rag`        | + Milvus, Elasticsearch, MinIO | RAG development           |
+| `pipeline`   | + Spark, Flink, MinIO          | Data pipeline development |
+| `monitoring` | Prometheus, Grafana            | Monitoring setup          |
 
 ### Configuration Files
 
@@ -176,4 +176,4 @@ source .venv/bin/activate
 
 - [uv Documentation](https://github.com/astral-sh/uv)
 - [Project Architecture](docs/ARCHITECTURE.md)
-- [Task Management](.ai-context/PARALLEL_DEV.md)
+- [Task Management](ai-context/PARALLEL_DEV.md)

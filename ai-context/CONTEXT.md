@@ -20,10 +20,10 @@
 
 本项目在 WSL (Windows Subsystem for Linux) 环境中开发：
 
-| 环境     | 系统           | 说明                          |
-| -------- | -------------- | ----------------------------- |
-| **WSL**  | Ubuntu 24.04   | 主开发环境，运行所有服务和工具 |
-| **宿主** | Windows        | 提供 WSL 运行环境             |
+| 环境     | 系统         | 说明                           |
+| -------- | ------------ | ------------------------------ |
+| **WSL**  | Ubuntu 24.04 | 主开发环境，运行所有服务和工具 |
+| **宿主** | Windows      | 提供 WSL 运行环境              |
 
 ### WSL 环境特点
 
@@ -70,7 +70,7 @@
 │   ├── images/                 # 生成的 SVG（gitignore，由 CI 构建）
 │   ├── ARCHITECTURE.md         # 详细技术架构
 │   └── RESUME_DESCRIPTION.md   # 简历模板和面试准备
-├── .ai-context/                # AI 助手上下文（本目录）
+├── ai-context/                # AI 助手上下文（本目录）
 │   ├── CONTEXT.md              # 主上下文文件（本文件）
 │   ├── PARALLEL_DEV.md         # 并行开发指南
 │   ├── conventions.yaml        # 结构化规范数据

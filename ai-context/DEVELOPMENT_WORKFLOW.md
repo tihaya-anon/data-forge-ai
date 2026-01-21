@@ -69,7 +69,7 @@ make deploy-test
 make smoke-test
 
 # 6. 更新任务状态
-# 编辑 .ai-context/tasks/tasks.yaml
+# 编辑 ai-context/tasks/tasks.yaml
 # 状态: 待处理 -> 已完成
 
 # 7. 提交代码
@@ -81,18 +81,18 @@ git push origin feature/T-XXX-task-name
 
 ### 风险矩阵
 
-| 风险 | 影响 | 概率 | 优先级 | 应对策略 |
-|------|------|------|--------|---------|
-| 接口不兼容 | 高 | 中 | P0 | 接口优先开发 + Contract Testing |
-| 集成失败 | 高 | 中 | P0 | 增量集成 + 自动化测试 |
-| 数据模型不一致 | 高 | 中 | P0 | Schema Registry + 数据验证 |
-| 依赖冲突 | 中 | 高 | P1 | 依赖锁定 + 隔离环境 |
-| 配置漂移 | 中 | 中 | P1 | 配置中心 + 验证 |
-| 测试覆盖不足 | 高 | 中 | P0 | 测试金字塔 + 覆盖率要求 |
-| 构建失败 | 中 | 低 | P2 | CI/CD + Docker |
-| 性能问题 | 中 | 中 | P1 | 性能测试 + 监控 |
-| 安全漏洞 | 高 | 低 | P1 | 安全扫描 + 审计 |
-| 文档过时 | 低 | 高 | P2 | 文档即代码 + 自动生成 |
+| 风险           | 影响 | 概率 | 优先级 | 应对策略                        |
+| -------------- | ---- | ---- | ------ | ------------------------------- |
+| 接口不兼容     | 高   | 中   | P0     | 接口优先开发 + Contract Testing |
+| 集成失败       | 高   | 中   | P0     | 增量集成 + 自动化测试           |
+| 数据模型不一致 | 高   | 中   | P0     | Schema Registry + 数据验证      |
+| 依赖冲突       | 中   | 高   | P1     | 依赖锁定 + 隔离环境             |
+| 配置漂移       | 中   | 中   | P1     | 配置中心 + 验证                 |
+| 测试覆盖不足   | 高   | 中   | P0     | 测试金字塔 + 覆盖率要求         |
+| 构建失败       | 中   | 低   | P2     | CI/CD + Docker                  |
+| 性能问题       | 中   | 中   | P1     | 性能测试 + 监控                 |
+| 安全漏洞       | 高   | 低   | P1     | 安全扫描 + 审计                 |
+| 文档过时       | 低   | 高   | P2     | 文档即代码 + 自动生成           |
 
 ### P0 风险详细应对
 
@@ -248,14 +248,14 @@ mvn jacoco:report
 
 ### 测试类型
 
-| 测试类型 | 工具 | 运行时机 | 目标 |
-|---------|------|---------|------|
-| 单元测试 | pytest, JUnit, ScalaTest | 每次提交 | 函数/类级别 |
-| 集成测试 | pytest, TestContainers | 每次提交 | 模块间交互 |
-| Contract 测试 | Pact | 接口变更时 | API 兼容性 |
-| E2E 测试 | pytest, Selenium | 每日/发布前 | 完整流程 |
-| 性能测试 | Locust, JMeter | 每周/发布前 | 性能指标 |
-| 安全测试 | Bandit, OWASP ZAP | 每周 | 安全漏洞 |
+| 测试类型      | 工具                     | 运行时机    | 目标        |
+| ------------- | ------------------------ | ----------- | ----------- |
+| 单元测试      | pytest, JUnit, ScalaTest | 每次提交    | 函数/类级别 |
+| 集成测试      | pytest, TestContainers   | 每次提交    | 模块间交互  |
+| Contract 测试 | Pact                     | 接口变更时  | API 兼容性  |
+| E2E 测试      | pytest, Selenium         | 每日/发布前 | 完整流程    |
+| 性能测试      | Locust, JMeter           | 每周/发布前 | 性能指标    |
+| 安全测试      | Bandit, OWASP ZAP        | 每周        | 安全漏洞    |
 
 ### 测试环境
 
@@ -411,17 +411,17 @@ make metrics
 
 ## 工具链
 
-| 用途 | 工具 |
-|------|------|
-| 版本控制 | Git |
-| CI/CD | GitHub Actions |
-| 容器化 | Docker, Docker Compose |
+| 用途     | 工具                                   |
+| -------- | -------------------------------------- |
+| 版本控制 | Git                                    |
+| CI/CD    | GitHub Actions                         |
+| 容器化   | Docker, Docker Compose                 |
 | 依赖管理 | uv (Python), Maven (Java), sbt (Scala) |
-| 测试 | pytest, JUnit, ScalaTest |
-| 代码质量 | Black, Ruff, Checkstyle, Scalafmt |
-| 安全扫描 | Bandit, OWASP Dependency Check |
-| 监控 | Prometheus, Grafana |
-| 日志 | ELK Stack |
+| 测试     | pytest, JUnit, ScalaTest               |
+| 代码质量 | Black, Ruff, Checkstyle, Scalafmt      |
+| 安全扫描 | Bandit, OWASP Dependency Check         |
+| 监控     | Prometheus, Grafana                    |
+| 日志     | ELK Stack                              |
 
 ## 最佳实践
 

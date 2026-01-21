@@ -73,7 +73,7 @@ make docker-urls
 - [开发环境配置](docs/DEVELOPMENT.md)
 - [技术栈决策](docs/TECH_STACK.md)
 - [架构设计](docs/ARCHITECTURE.md)
-- [任务管理](.ai-context/PARALLEL_DEV.md)
+- [任务管理](ai-context/PARALLEL_DEV.md)
 
 ## 项目状态
 

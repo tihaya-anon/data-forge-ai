@@ -448,7 +448,7 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description='任务 DAG 分析工具')
-    parser.add_argument('--tasks', '-t', default='.ai-context/tasks/tasks.yaml',
+    parser.add_argument('--tasks', '-t', default='ai-context/tasks/tasks.yaml',
                         help='任务配置文件路径')
     parser.add_argument('--output', '-o', default='docs/diagrams/task-dag.d2',
                         help='D2 输出文件路径')
