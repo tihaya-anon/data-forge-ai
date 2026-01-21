@@ -18,62 +18,18 @@
 
 ## 开发环境
 
-本项目使用双机开发环境：
+本项目在 WSL (Windows Subsystem for Linux) 环境中开发：
 
-| 机器     | 系统                       | 用途                    | 连接方式      |
-| -------- | -------------------------- | ----------------------- | ------------- |
-| **本机** | macOS                      | 主开发机、IDE、Git 操作 | -             |
-| **远程** | Windows WSL (Ubuntu 24.04) | Docker 服务、重计算任务 | `ssh dev-win` |
+| 环境     | 系统           | 说明                          |
+| -------- | -------------- | ----------------------------- |
+| **WSL**  | Ubuntu 24.04   | 主开发环境，运行所有服务和工具 |
+| **宿主** | Windows        | 提供 WSL 运行环境             |
 
-### 远程机器使用
+### WSL 环境特点
 
-```bash
-# 连接远程机器
-ssh dev-win
-
-# 在远程执行命令（单次）
-ssh dev-win "cd /path/to/project && make docker-up"
-```
-
-### 代码同步方案
-
-**方案一：rsync 直接同步（推荐，实时性高）**
-
-```bash
-# 同步代码到远程
-rsync -avz --exclude '.git' --exclude 'node_modules' --exclude '__pycache__' \
-  ./ dev-win:/path/to/project/
-
-# 监听变化自动同步（需安装 fswatch）
-fswatch -o . | xargs -n1 -I{} rsync -avz --exclude '.git' ./ dev-win:/path/to/project/
-```
-
-**方案二：通过 GitHub 同步（备选，适合多人协作）**
-
-```bash
-# 本机：提交并推送
-git add -A && git commit -m "update" && git push
-
-# 远程：拉取最新代码
-ssh dev-win "cd /path/to/project && git pull"
-
-# 或一条命令完成
-git push && ssh dev-win "cd /path/to/project && git pull"
-```
-
-| 方案   | 优点                 | 缺点               |
-| ------ | -------------------- | ------------------ |
-| rsync  | 实时、不需要提交     | 需要网络直连       |
-| GitHub | 有版本记录、支持多人 | 需要先提交、有延迟 |
-
-### 服务部署建议
-
-| 服务         | 建议部署位置   | 原因                 |
-| ------------ | -------------- | -------------------- |
-| Docker 容器  | 远程 (dev-win) | 资源充足、不影响本机 |
-| IDE / 编辑器 | 本机 (Mac)     | 体验流畅             |
-| Git 操作     | 本机 (Mac)     | SSH key 配置         |
-| 重计算任务   | 远程 (dev-win) | CPU/内存资源         |
+- 直接在 WSL 中进行代码编辑、Git 操作和服务运行
+- Docker Desktop 与 WSL 集成，可直接使用 Docker 命令
+- 无需代码同步，所有操作在同一环境中完成
 
 ## 技术栈
 
@@ -151,17 +107,17 @@ make parallel-status           # 查看工作区状态
 make task-analyze              # 分析任务 DAG
 ```
 
-### 远程执行命令
+### 常用 Docker 操作
 
 ```bash
-# 在远程启动 Docker 服务
-ssh dev-win "cd ~/remote-env/data-forge-ai && make docker-up"
+# 启动 Docker 服务
+make docker-up
 
-# 在远程查看日志
-ssh dev-win "cd ~/remote-env/data-forge-ai && make docker-logs"
+# 查看日志
+make docker-logs
 
-# 在远程停止服务
-ssh dev-win "cd ~/remote-env/data-forge-ai && make docker-down"
+# 停止服务
+make docker-down
 ```
 
 ## 代码规范
@@ -232,4 +188,4 @@ ssh dev-win "cd ~/remote-env/data-forge-ai && make docker-down"
 1. **SVG 文件不提交** - 由 GitHub Actions CI 生成
 2. **这是演示项目** - 非生产级代码
 3. **开发语言**：YAML、Markdown、D2，后续会有 Python/Java/Scala 实现
-4. **双机开发** - 本机编码，远程运行服务
+4. **WSL 开发** - 在 WSL 环境中完成所有开发工作
