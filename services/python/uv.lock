@@ -603,7 +603,7 @@ dependencies = [
     { name = "redis" },
 ]
 
-[package.optional-dependencies]
+[package.dev-dependencies]
 dev = [
     { name = "black" },
     { name = "mypy" },
@@ -626,26 +626,31 @@ spark = [
 
 [package.metadata]
 requires-dist = [
-    { name = "apache-flink", marker = "extra == 'flink'", specifier = ">=1.18.0" },
-    { name = "black", marker = "extra == 'dev'", specifier = ">=23.0.0" },
     { name = "elasticsearch", specifier = ">=8.11.0" },
     { name = "flask", specifier = ">=3.0.0" },
     { name = "kafka-python", specifier = ">=2.0.2" },
-    { name = "langchain", marker = "extra == 'rag'", specifier = ">=0.1.0" },
     { name = "minio", specifier = ">=7.2.0" },
-    { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.7.0" },
-    { name = "openai", marker = "extra == 'rag'", specifier = ">=1.0.0" },
     { name = "pydantic", specifier = ">=2.5.0" },
-    { name = "pyspark", marker = "extra == 'spark'", specifier = ">=3.5.0" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.4.0" },
-    { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.21.0" },
-    { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.1.0" },
     { name = "pyyaml", specifier = ">=6.0" },
     { name = "redis", specifier = ">=5.0.0" },
-    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.1.0" },
-    { name = "sentence-transformers", marker = "extra == 'rag'", specifier = ">=2.2.0" },
 ]
-provides-extras = ["dev", "spark", "flink", "rag"]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "black", specifier = ">=23.0.0" },
+    { name = "mypy", specifier = ">=1.7.0" },
+    { name = "pytest", specifier = ">=7.4.0" },
+    { name = "pytest-asyncio", specifier = ">=0.21.0" },
+    { name = "pytest-cov", specifier = ">=4.1.0" },
+    { name = "ruff", specifier = ">=0.1.0" },
+]
+flink = [{ name = "apache-flink", specifier = ">=1.18.0" }]
+rag = [
+    { name = "langchain", specifier = ">=0.1.0" },
+    { name = "openai", specifier = ">=1.0.0" },
+    { name = "sentence-transformers", specifier = ">=2.2.0" },
+]
+spark = [{ name = "pyspark", specifier = ">=3.5.0" }]
 
 [[package]]
 name = "dill"

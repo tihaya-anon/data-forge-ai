@@ -14,7 +14,7 @@ dependencies = [
     "flask>=3.0.0",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
     "pytest>=7.4.0",
     "pytest-cov>=4.1.0",
@@ -23,15 +23,12 @@ dev = [
     "ruff>=0.1.0",
     "mypy>=1.7.0",
 ]
-
 spark = [
     "pyspark>=3.5.0",
 ]
-
 flink = [
     "apache-flink>=1.18.0",
 ]
-
 rag = [
     "sentence-transformers>=2.2.0",
     "langchain>=0.1.0",

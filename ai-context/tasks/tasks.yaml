@@ -106,7 +106,7 @@
     名称: "Kafka Producer 基础实现"
     工时: 4
     依赖: ["T-001", "T-004"]
-    状态: "进行中"
+    状态: "已完成"
     分配: "agent-1"
     范围:
       - "src/pipeline/kafka/producer/"
