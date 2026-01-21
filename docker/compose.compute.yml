@@ -8,6 +8,7 @@ services:
   # Apache Spark
   # -------------------------------------------
   spark-master:
+    profiles: ["pipeline"]
     image: bitnami/spark:3.5
     container_name: dataforge-spark-master
     ports:
@@ -30,6 +31,7 @@ services:
     restart: unless-stopped
 
   spark-worker:
+    profiles: ["pipeline"]
     image: bitnami/spark:3.5
     container_name: dataforge-spark-worker
     environment:
@@ -49,6 +51,7 @@ services:
   # Apache Flink
   # -------------------------------------------
   flink-jobmanager:
+    profiles: ["pipeline"]
     image: flink:1.18-scala_2.12-java11
     container_name: dataforge-flink-jobmanager
     command: jobmanager
@@ -71,6 +74,7 @@ services:
     restart: unless-stopped
 
   flink-taskmanager:
+    profiles: ["pipeline"]
     image: flink:1.18-scala_2.12-java11
     container_name: dataforge-flink-taskmanager
     command: taskmanager

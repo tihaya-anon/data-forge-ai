@@ -13,6 +13,7 @@ COMPOSE_COMPUTE := $(DOCKER_DIR)/compose.compute.yml
 COMPOSE_ORCHESTRATION := $(DOCKER_DIR)/compose.orchestration.yml
 COMPOSE_ANALYTICS := $(DOCKER_DIR)/compose.analytics.yml
 COMPOSE_MONITORING := $(DOCKER_DIR)/compose.monitoring.yml
+COMPOSE_TESTING := $(DOCKER_DIR)/compose.testing.yml
 
 DC_BASE := docker compose -f $(COMPOSE_BASE)
 DC_ALL := $(DC_BASE) \
@@ -55,6 +56,92 @@ docker-clean: docker-down ## Stop services and remove volumes
 	@printf "$(RED)Removing all volumes...$(NC)\n"
 	@docker volume rm -f $$(docker volume ls -q -f name=distribute_ai) 2>/dev/null || true
 	@printf "$(GREEN)✓ Cleaned$(NC)\n"
+
+# -------------------------------------------
+# Service Reset Commands
+# -------------------------------------------
+.PHONY: docker-reset-kafka docker-reset-milvus docker-reset-redis docker-reset-storage docker-reset-all
+
+docker-reset-kafka: ## Reset Kafka data
+	@printf "$(YELLOW)Resetting Kafka...$(NC)\n"
+	@$(DC_BASE) -f $(COMPOSE_STORAGE) stop kafka kafka-ui
+	@docker volume rm -f distribute_ai_kafka-data 2>/dev/null || true
+	@docker volume create distribute_ai_kafka-data
+	@$(DC_BASE) -f $(COMPOSE_STORAGE) --profile minimal up -d kafka kafka-ui
+	@printf "$(GREEN)✓ Kafka reset complete$(NC)\n"
+
+docker-reset-milvus: ## Reset Milvus vector database
+	@printf "$(YELLOW)Resetting Milvus...$(NC)\n"
+	@$(DC_BASE) -f $(COMPOSE_STORAGE) stop milvus milvus-etcd
+	@docker volume rm -f distribute_ai_milvus-data distribute_ai_milvus-etcd-data 2>/dev/null || true
+	@docker volume create distribute_ai_milvus-data
+	@docker volume create distribute_ai_milvus-etcd-data
+	@$(DC_BASE) -f $(COMPOSE_STORAGE) --profile rag up -d milvus-etcd milvus
+	@printf "$(GREEN)✓ Milvus reset complete$(NC)\n"
+
+docker-reset-redis: ## Reset Redis cache
+	@printf "$(YELLOW)Resetting Redis...$(NC)\n"
+	@$(DC_BASE) -f $(COMPOSE_STORAGE) stop redis
+	@docker volume rm -f distribute_ai_redis-data 2>/dev/null || true
+	@docker volume create distribute_ai_redis-data
+	@$(DC_BASE) -f $(COMPOSE_STORAGE) --profile minimal up -d redis
+	@printf "$(GREEN)✓ Redis reset complete$(NC)\n"
+
+docker-reset-storage: ## Reset all storage service data
+	@printf "$(RED)Resetting all storage services...$(NC)\n"
+	@$(DC_BASE) -f $(COMPOSE_STORAGE) down
+	@docker volume rm -f distribute_ai_kafka-data distribute_ai_minio-data distribute_ai_milvus-etcd-data distribute_ai_milvus-data distribute_ai_redis-data distribute_ai_es-data 2>/dev/null || true
+	@$(MAKE) docker-volumes
+	@printf "$(GREEN)✓ Storage reset complete$(NC)\n"
+
+docker-reset-all: docker-clean docker-volumes ## Nuclear option - reset everything
+	@printf "$(GREEN)✓ Complete reset done$(NC)\n"
+
+# -------------------------------------------
+# Development Profiles
+# -------------------------------------------
+.PHONY: dev-minimal dev-rag dev-pipeline docker-wait
+
+dev-minimal: docker-network docker-volumes ## Start minimal dev environment (Kafka, Redis)
+	@printf "$(CYAN)Starting minimal profile (Kafka + Redis)...$(NC)\n"
+	@$(DC_BASE) -f $(COMPOSE_STORAGE) --profile minimal up -d
+	@printf "$(GREEN)✓ Minimal services started$(NC)\n"
+	@$(MAKE) docker-status
+
+dev-rag: docker-network docker-volumes ## Start RAG dev environment (minimal + Milvus, ES, MinIO)
+	@printf "$(CYAN)Starting RAG profile...$(NC)\n"
+	@$(DC_BASE) -f $(COMPOSE_STORAGE) --profile rag up -d
+	@printf "$(GREEN)✓ RAG services started$(NC)\n"
+	@$(MAKE) docker-status
+
+dev-pipeline: docker-network docker-volumes ## Start pipeline dev environment (minimal + Spark, Flink, MinIO)
+	@printf "$(CYAN)Starting pipeline profile...$(NC)\n"
+	@$(DC_BASE) -f $(COMPOSE_STORAGE) -f $(COMPOSE_COMPUTE) --profile pipeline up -d
+	@printf "$(GREEN)✓ Pipeline services started$(NC)\n"
+	@$(MAKE) docker-status
+
+dev-test: docker-network docker-volumes ## Start test environment with mock services
+	@printf "$(CYAN)Starting test environment...$(NC)\n"
+	@$(DC_BASE) -f $(COMPOSE_STORAGE) -f $(COMPOSE_TESTING) --profile minimal up -d
+	@printf "$(GREEN)✓ Test environment started (Kafka, Redis, Mock LLM)$(NC)\n"
+	@$(MAKE) docker-status
+
+docker-wait: ## Wait for all running services to be healthy
+	@printf "$(CYAN)Waiting for services to be healthy...$(NC)\n"
+	@timeout=180; elapsed=0; \
+	while [ $$elapsed -lt $$timeout ]; do \
+		unhealthy=$$($(DC_ALL) ps --format json 2>/dev/null | grep -c '"Health":"starting"\|"Health":"unhealthy"' || echo 0); \
+		if [ "$$unhealthy" -eq 0 ]; then \
+			printf "$(GREEN)✓ All services are healthy$(NC)\n"; \
+			exit 0; \
+		fi; \
+		printf "."; \
+		sleep 5; \
+		elapsed=$$((elapsed + 5)); \
+	done; \
+	printf "\n$(RED)✗ Timeout waiting for services$(NC)\n"; \
+	$(DC_ALL) ps; \
+	exit 1
 
 # -------------------------------------------
 # Service Group Operations

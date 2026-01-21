@@ -1,0 +1,30 @@
+# ===========================================
+# DataForge AI - Testing Services
+# ===========================================
+# Mock LLM and test data sources
+
+services:
+  # -------------------------------------------
+  # Mock LLM Service
+  # -------------------------------------------
+  mock-llm:
+    build:
+      context: ../tests/mock-services
+      dockerfile: Dockerfile
+    container_name: dataforge-mock-llm
+    ports:
+      - "8000:8000"
+    environment:
+      TZ: Asia/Shanghai
+    networks:
+      - dataforge
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+networks:
+  dataforge:
+    external: true

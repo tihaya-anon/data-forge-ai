@@ -198,11 +198,14 @@ dataforge-ai/
 │
 ├── 📂 orchestration/                # 编排调度
 │   ├── airflow/                     # Airflow DAGs
-│   └── monitoring/                  # Prometheus + Grafana
+│   └── monitoring/                  # Grafana 配置
 │
 ├── 📂 deployment/                   # 部署配置
-│   ├── docker/                      # Docker 配置
 │   └── kubernetes/                  # K8s 部署文件
+│
+├── 📂 docker/                       # Docker Compose 配置
+│   ├── compose.*.yml                # 模块化服务配置
+│   └── monitoring/                  # 监控配置
 │
 ├── 📂 docs/                         # 文档
 │   ├── diagrams/                    # D2 图表源码
@@ -210,12 +213,17 @@ dataforge-ai/
 │   ├── ARCHITECTURE.md              # 架构设计文档
 │   └── RESUME_DESCRIPTION.md        # 简历描述模板
 │
-├── 📂 .ai-context/                  # AI 助手上下文
-│   ├── CONTEXT.md                   # 主上下文文件
-│   └── conventions.yaml             # 结构化规范数据
+├── 📂 tests/                        # 测试相关
+│   ├── mock-data/                   # 测试数据
+│   └── mock-services/               # Mock 服务
 │
-├── 📄 docker-compose.yml            # 本地开发环境
-├── 📄 Makefile                      # 构建脚本
+├── 📂 makefiles/                    # Makefile 模块
+│   ├── diagrams.mk                  # 图表生成
+│   ├── docker.mk                    # Docker 操作
+│   └── dev.mk                       # 开发工具
+│
+├── 📄 Makefile                      # 主构建脚本
+├── 📄 CLAUDE.md                     # Claude Code 指南
 └── 📄 README.md                     # 项目说明
 ```
 
@@ -287,21 +295,61 @@ make docker-diagrams
 git clone https://github.com/your-org/dataforge-ai.git
 cd dataforge-ai
 
-# 2. 启动基础设施
-docker-compose up -d kafka milvus redis minio
+# 2. 初始化项目（首次使用）
+make dev-init
 
-# 3. 启动计算服务
-docker-compose up -d spark-master flink-jobmanager
+# 3. 启动开发环境（根据需求选择）
 
-# 4. 启动 RAG 服务
-docker-compose up -d rag-api
+# 最小环境（Kafka + Redis，适合快速测试）
+make dev-minimal
 
-# 5. 访问服务
-# - Spark UI: http://localhost:8080
-# - Flink UI: http://localhost:8081
-# - Airflow: http://localhost:8082
-# - Grafana: http://localhost:3000
-# - RAG API: http://localhost:8000
+# RAG 开发环境（包含向量数据库和搜索引擎）
+make dev-rag
+
+# 数据管道开发环境（包含 Spark 和 Flink）
+make dev-pipeline
+
+# 测试环境（包含 Mock LLM 服务）
+make dev-test
+
+# 完整环境（所有服务）
+make docker-up
+
+# 4. 查看服务状态
+make docker-status
+
+# 5. 查看服务访问地址
+make docker-urls
+
+# 6. 等待所有服务就绪
+make docker-wait
+```
+
+### 服务访问地址
+
+启动服务后，可以通过以下地址访问：
+
+```bash
+# 存储服务
+Kafka UI:       http://localhost:8080
+MinIO Console:  http://localhost:9001  (minioadmin/minioadmin123)
+Milvus:         localhost:19530
+Redis:          localhost:6379
+Elasticsearch:  http://localhost:9200
+
+# 计算服务
+Spark UI:       http://localhost:8081
+Flink UI:       http://localhost:8082
+
+# 编排服务
+Airflow:        http://localhost:8083  (admin/admin)
+
+# 监控服务
+Prometheus:     http://localhost:9090
+Grafana:        http://localhost:3000  (admin/admin)
+
+# 测试服务
+Mock LLM:       http://localhost:8000
 ```
 
 ### 运行示例

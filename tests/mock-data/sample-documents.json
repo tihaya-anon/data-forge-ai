@@ -1,0 +1,23 @@
+[
+  {
+    "id": "doc001",
+    "title": "Apache Flink CDC 配置指南",
+    "content": "Flink CDC 是一个基于 Debezium 的变更数据捕获工具。配置 MySQL CDC 需要以下步骤：1. 启用 MySQL binlog，2. 创建具有复制权限的用户，3. 配置 Flink CDC Source。",
+    "source": "internal_docs",
+    "timestamp": "2025-01-15T10:00:00Z"
+  },
+  {
+    "id": "doc002",
+    "title": "Milvus 向量数据库最佳实践",
+    "content": "Milvus 是一个开源向量数据库，支持万亿级向量检索。最佳实践包括：选择合适的索引类型（IVF_FLAT, HNSW），合理设置 nlist 和 nprobe 参数，使用分区加速查询。",
+    "source": "internal_docs",
+    "timestamp": "2025-01-16T14:30:00Z"
+  },
+  {
+    "id": "doc003",
+    "title": "Spark 数据去重算法",
+    "content": "MinHash LSH 是一种高效的近似去重算法。通过计算文档的 MinHash 签名，然后使用局部敏感哈希（LSH）找到相似文档对。Spark MLlib 提供了 MinHashLSH 实现。",
+    "source": "technical_blog",
+    "timestamp": "2025-01-17T09:15:00Z"
+  }
+]

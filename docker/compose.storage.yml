@@ -8,6 +8,7 @@ services:
   # Apache Kafka
   # -------------------------------------------
   kafka:
+    profiles: ["minimal", "rag", "pipeline"]
     image: bitnami/kafka:3.6
     container_name: dataforge-kafka
     ports:
@@ -35,6 +36,7 @@ services:
     restart: unless-stopped
 
   kafka-ui:
+    profiles: ["minimal", "rag", "pipeline"]
     image: provectuslabs/kafka-ui:latest
     container_name: dataforge-kafka-ui
     ports:
@@ -54,6 +56,7 @@ services:
   # MinIO (S3-compatible)
   # -------------------------------------------
   minio:
+    profiles: ["rag", "pipeline"]
     image: minio/minio:latest
     container_name: dataforge-minio
     command: server /data --console-address ":9001"
@@ -80,6 +83,7 @@ services:
   # Milvus (Vector Database)
   # -------------------------------------------
   milvus-etcd:
+    profiles: ["rag"]
     image: quay.io/coreos/etcd:v3.5.5
     container_name: dataforge-milvus-etcd
     command: etcd -advertise-client-urls=http://127.0.0.1:2379 -listen-client-urls=http://0.0.0.0:2379 --data-dir=/etcd
@@ -102,6 +106,7 @@ services:
     restart: unless-stopped
 
   milvus:
+    profiles: ["rag"]
     image: milvusdb/milvus:v2.3.4
     container_name: dataforge-milvus
     command: ["milvus", "run", "standalone"]
@@ -135,6 +140,7 @@ services:
   # Redis
   # -------------------------------------------
   redis:
+    profiles: ["minimal", "rag", "pipeline"]
     image: redis:7-alpine
     container_name: dataforge-redis
     command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
@@ -156,6 +162,7 @@ services:
   # Elasticsearch
   # -------------------------------------------
   elasticsearch:
+    profiles: ["rag"]
     image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
     container_name: dataforge-elasticsearch
     ports:

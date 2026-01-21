@@ -1,0 +1,5 @@
+{"text": "Apache Spark 是一个用于大规模数据处理的统一分析引擎。它提供了 Java、Scala、Python 和 R 的高级 API。", "source": "wikipedia", "quality_score": 0.85}
+{"text": "Flink 是一个框架和分布式处理引擎，用于在无边界和有边界数据流上进行有状态的计算。", "source": "apache_docs", "quality_score": 0.92}
+{"text": "Milvus 是一个开源向量数据库，专为嵌入相似性搜索和 AI 应用而构建。", "source": "github", "quality_score": 0.88}
+{"text": "Kafka 是一个分布式流处理平台，具有三个关键功能：发布和订阅记录流、以容错的方式存储记录流、处理记录流。", "source": "kafka_docs", "quality_score": 0.90}
+{"text": "MinHash 是一种快速估计两个集合相似度的技术，常用于大规模数据去重。", "source": "research_paper", "quality_score": 0.87}

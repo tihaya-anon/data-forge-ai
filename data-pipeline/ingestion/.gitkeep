@@ -1,0 +1,2 @@
+# Placeholder for data ingestion module
+# TODO: Implement data ingestion from various sources (Kafka, S3, databases)

@@ -8,6 +8,7 @@ services:
   # Prometheus
   # -------------------------------------------
   prometheus:
+    profiles: ["monitoring"]
     image: prom/prometheus:v2.48.0
     container_name: dataforge-prometheus
     command:
@@ -34,6 +35,7 @@ services:
   # Grafana
   # -------------------------------------------
   grafana:
+    profiles: ["monitoring"]
     image: grafana/grafana:10.2.2
     container_name: dataforge-grafana
     ports:
