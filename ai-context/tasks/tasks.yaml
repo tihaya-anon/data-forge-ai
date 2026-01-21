@@ -265,7 +265,7 @@
     名称: "Flink CDC 作业框架"
     工时: 4
     依赖: ["T-103", "T-105"]
-    状态: "进行中"
+    状态: "已完成"
     范围:
       - "src/pipeline/flink/base/"
       - "tests/pipeline/flink/"
