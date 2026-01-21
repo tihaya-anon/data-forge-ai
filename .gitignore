@@ -71,3 +71,8 @@ secrets/
 *.pem
 *.key
 services/python/.coverage
+
+# -------------------------------------------
+# AI Agent Prompts (Generated)
+# -------------------------------------------
+AGENT_*_PROMPT.md
