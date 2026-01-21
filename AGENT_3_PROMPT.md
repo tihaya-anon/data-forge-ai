@@ -18,46 +18,40 @@ DataForge AI 是一个基于流批一体架构的企业级大数据AI平台，�
 - 名称: 配置管理模块
 - 预估工时: 3 小时
 - 依赖任务: T-004
-- 修改范围: 
-  - src/common/config/
-  - tests/common/config/
-- 任务描述: 
-  统一配置管理系统：
-  - Pydantic 配置模型
-  - 环境变量支持
-  - YAML/JSON 配置文件
-  - 配置验证和类型检查
+- 状态: 进行中
+- 修改范围: src/common/config/, tests/common/config/
+- 任务描述:
+统一配置管理系统：
+- Pydantic 配置模型
+- 环境变量支持
+- YAML/JSON 配置文件
+- 配置验证和类型检查
 
-## 上下文信息
+## 任务执行准则
 
-### 项目结构
-```
-dataforge-ai/
-├── docker/                 # Docker 配置
-├── makefiles/             # Makefile 模块
-├── services/              # 服务代码
-│   └── python/            # Python 服务
-│       └── src/
-│           └── dataforge_ai/
-├── jobs/                  # Spark/Flink 作业
-├── tests/                 # 测试代码
-└── ai-context/            # AI 代理上下文
-    └── tasks/             # 任务定义
-```
+1. 严格按照任务描述的要求执行
+2. 只在指定的修改范围内进行变更
+3. 遵守项目的编码规范和技术栈要求
+4. 与依赖任务的结果保持兼容
+5. 完成任务后更新任务状态为"已完成"
 
-### 开发规范
-- 代码风格：遵循PEP 8，使用Black格式化
-- 测试：每个功能都需要单元测试，覆盖率不低于80%
-- 文档：重要函数和类需要docstring
+## 开发环境
 
-### 提交规范
-- 任务相关提交："[T-105] 具体更改描述"
-- 任务完成后更新状态：将 ai-context/tasks/tasks.yaml 中 T-105 的状态改为"已完成"
+- Docker & Docker Compose
+- Python 3.10+
+- Java 11+
 
-## 任务执行步骤
+## 参考资料
 
-1. 理解需求：仔细阅读任务描述和依赖项
-2. 设计实现：考虑与现有系统的集成
-3. 编码实现：遵循项目规范和最佳实践
-4. 测试验证：确保功能正常且无回归
-5. 更新状态：完成后修改任务状态为"已完成"
+- 项目上下文: CONTEXT.md (根目录)
+- 项目架构: docs/images/architecture.svg
+- 任务清单: ai-context/tasks/tasks.yaml
+- 开发工作流: ai-context/DEVELOPMENT_WORKFLOW.md
+- 并行开发指南: ai-context/PARALLEL_DEV.md
+
+## 提交规范
+
+完成任务后，请确保提交信息包含任务编号，例如：
+`git commit -m "T-105 实现具体功能"`
+
+现在开始执行你的任务：T-105 - 配置管理模块
