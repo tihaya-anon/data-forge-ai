@@ -317,7 +317,7 @@ DAG配置:
     - Sink 到 Kafka/Milvus
 
     '
-  状态: 进行中
+  状态: 已完成
   编号: T-206
   范围:
   - src/pipeline/flink/streaming/
@@ -424,7 +424,7 @@ DAG配置:
   - src/rag/retrieval/hybrid/
   - tests/rag/retrieval/
 - 依赖:
-  - T-305
+  - T-306
   名称: LLM 生成服务
   工时: 4
   描述: 'LLM 生成服务：
@@ -444,7 +444,7 @@ DAG配置:
   - src/rag/generation/
   - tests/rag/generation/
 - 依赖:
-  - T-306
+  - T-307
   名称: RAG API 服务
   工时: 5
   描述: 'RAG REST API：
