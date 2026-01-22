@@ -377,7 +377,7 @@ DAG配置:
     - 过滤条件支持
 
     '
-  状态: 进行中
+  状态: 已完成
   编号: T-303
   范围:
   - src/rag/retrieval/vector/
@@ -424,7 +424,7 @@ DAG配置:
   - src/rag/retrieval/hybrid/
   - tests/rag/retrieval/
 - 依赖:
-  - T-306
+  - T-305
   名称: LLM 生成服务
   工时: 4
   描述: 'LLM 生成服务：
@@ -444,7 +444,7 @@ DAG配置:
   - src/rag/generation/
   - tests/rag/generation/
 - 依赖:
-  - T-307
+  - T-306
   名称: RAG API 服务
   工时: 5
   描述: 'RAG REST API：
@@ -490,7 +490,7 @@ DAG配置:
   工时: 5
   描述: '性能优化：
 
-    - 批量处理优化
+    - 批处理优化
 
     - 缓存策略
 
