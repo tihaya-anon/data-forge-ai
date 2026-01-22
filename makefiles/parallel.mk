@@ -72,6 +72,7 @@ task-mark-as-in-progress: ## 将指定任务标记为"进行中" (make task-mark
 	@echo "正在将指定任务标记为'进行中'..."
 	@python3 $(DAG_SCRIPT) --tasks $(TASKS_FILE) --mark-in-progress $(TASKS)
 	@echo "✓ 任务状态更新完成"
+	make task-dag
 
 # ============================================================================
 # AI Agent Prompt 生成

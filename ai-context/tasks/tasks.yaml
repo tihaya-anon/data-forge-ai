@@ -317,7 +317,7 @@ DAG配置:
     - Sink 到 Kafka/Milvus
 
     '
-  状态: 待处理
+  状态: 进行中
   编号: T-206
   范围:
   - src/pipeline/flink/streaming/
@@ -377,7 +377,7 @@ DAG配置:
     - 过滤条件支持
 
     '
-  状态: 待处理
+  状态: 进行中
   编号: T-303
   范围:
   - src/rag/retrieval/vector/
@@ -397,7 +397,7 @@ DAG配置:
     - 高亮支持
 
     '
-  状态: 待处理
+  状态: 进行中
   编号: T-304
   范围:
   - src/rag/retrieval/keyword/
