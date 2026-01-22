@@ -418,7 +418,7 @@ DAG配置:
     - 性能优化
 
     '
-  状态: 待处理
+  状态: 进行中
   编号: T-305
   范围:
   - src/rag/retrieval/hybrid/
